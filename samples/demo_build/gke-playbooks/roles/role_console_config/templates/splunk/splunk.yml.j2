@@ -1,0 +1,98 @@
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: splunketc
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 2Gi
+  
+  storageClassName: slow
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: splunk
+  namespace: infra
+spec:
+  selector:
+    app: splunk
+  type: NodePort
+  ports:
+    - name: splunkhttp
+      port: 8000
+    - name: splunksyslog
+      port: 3514
+    - name: splunkforwarder
+      port: 9997
+    - name: splunkhttpevt
+      port: 8088
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: splunkvar
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  
+  storageClassName: slow
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: splunk
+  namespace: infra
+  labels:
+    apps: splunk
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: splunk
+  template:
+    metadata:
+      labels:
+        app: splunk
+    spec:
+      nodeSelector:
+        kubernetes.io/hostname: {{ ansible_hostname }}
+      containers:
+        - name: splunk
+          image: splunk/splunk:7.1.2
+          ports:
+            - name: splunkweb
+              containerPort: 8000
+            - name: splunkhttpevt
+              containerPort: 8088
+            - name: splunksyslog
+              containerPort: 3514
+              hostPort: 3514
+            - name: splunkforwarder
+              containerPort: 9997
+          env:
+          - name: SPLUNK_START_ARGS
+            value: "--accept-license --answer-yes --seed-passwd {{ new_password }}"  
+          volumeMounts:
+          - name: etcpersistentvolume
+            mountPath: "/opt/splunk/etc"
+          - name: varpersistentvolume
+            mountPath: "/opt/splunk/var"
+      volumes:
+      - name: etcpersistentvolume
+        persistentVolumeClaim:
+          claimName: splunketc
+      - name: varpersistentvolume
+        persistentVolumeClaim:
+          claimName: splunkvar
+

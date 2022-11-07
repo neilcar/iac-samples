@@ -1,0 +1,19 @@
+- name: Get k8smaster facts
+  setup:
+  delegate_to: "{{ groups['k8s-master'][0] }}"  
+
+- name: Get kubeadm token
+  command: kubeadm token create
+  register: kubeadm_token
+  delegate_to: "{{ groups['k8s-master'][0] }}"
+
+
+- name: Set kubelet cloud-provider
+  lineinfile:
+    path: /etc/default/kubelet
+    regexp: '^KUBELET_EXTRA_ARGS='
+    line: 'KUBELET_EXTRA_ARGS=--cloud-provider=gce'
+
+- name: Run the kubeadm init command
+  command: kubeadm join --ignore-preflight-errors cri --discovery-token-unsafe-skip-ca-verification --token={{ kubeadm_token.stdout }} {{ hostvars[groups['k8s-master'][0]]['ansible_hostname'] }}:6443
+  register: kubeadmcommand

@@ -1,0 +1,15 @@
+apiVersion: auditregistration.k8s.io/v1alpha1
+kind: AuditSink
+metadata:
+  name: twistlock-sink
+spec:
+  policy:
+    level: RequestResponse
+    stages:
+    - ResponseComplete
+  webhook:
+    throttle:
+      qps: 10
+      burst: 15
+    clientConfig:
+      url: "{{ twistlock_console }}/api/v1/kubernetes/webhook/k8s-audits-webhook"

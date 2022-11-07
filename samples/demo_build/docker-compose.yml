@@ -1,0 +1,101 @@
+version: '3.7'
+services:
+  terraform-demo-build:
+    image: gcr.io/cto-sandbox/cto/terraform-demo-build:edge
+    container_name: terraform_demo_build
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/files/twistlock-cto-lab-andreas.json:/terraform/twistlock-cto-lab.json
+      - ${demo_build_config:-~/demo_build_config}/variables.tf:/terraform/variables.tf
+      - ${demo_build_config:-~/demo_build_config}/terraform_state:/terraform/terraform_state
+  ansible-demo-build:
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:${demo_build_tag:-latest}
+    container_name: demo_build
+    environment:
+      - DEMO_BUILD_TAG=${demo_build_tag:-latest}
+      - TERRAFORM=${terraform:-False}
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/group_vars:/ansible/playbooks/group_vars
+      - ${demo_build_config:-~/demo_build_config}/files/:/ansible/playbooks/files
+      - ${demo_build_config:-~/demo_build_config}/${inventory:-inventory.yml}:/ansible/playbooks/inventory.yml
+      - ${demo_build_config:-~/demo_build_config}/.ansible.cfg:/etc/ansible/ansible.cfg
+      - ${demo_build_config:-~/demo_build_config}/.ssh:/root/.ssh
+      - ${prerelease:-/Volumes/GoogleDrive/Team Drives/Releases/}:/Volumes/GoogleDrive/Team Drives/Releases/
+  ansible-demo-build-local:
+    build: .
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:edge
+    container_name: demo_build
+    environment:
+      - DEMO_BUILD_TAG=local
+      - TERRAFORM=${terraform:-False}
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/group_vars:/ansible/playbooks/group_vars
+      - ${demo_build_config:-~/demo_build_config}/files/:/ansible/playbooks/files
+      - ${demo_build_config:-~/demo_build_config}/${inventory:-inventory.yml}:/ansible/playbooks/inventory.yml
+      - ${demo_build_config:-~/demo_build_config}/.ansible.cfg:/etc/ansible/ansible.cfg
+      - ${demo_build_config:-~/demo_build_config}/.ssh:/root/.ssh
+  test:
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:${demo_build_tag:-latest}
+    container_name: test_config
+    entrypoint:
+      - ansible-playbook
+      - -i
+      - inventory.yml
+      - test_config.yml
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/group_vars:/ansible/playbooks/group_vars
+      - ${demo_build_config:-~/demo_build_config}/files/:/ansible/playbooks/files
+      - ${demo_build_config:-~/demo_build_config}/${inventory:-inventory.yml}:/ansible/playbooks/inventory.yml
+      - ${demo_build_config:-~/demo_build_config}/.ansible.cfg:/etc/ansible/ansible.cfg
+      - ${demo_build_config:-~/demo_build_config}/.ssh:/root/.ssh
+  test-local:
+    build: .
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:edge
+    container_name: test_config
+    entrypoint:
+      - ansible-playbook
+      - -i
+      - inventory.yml
+      - test_config.yml
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/group_vars:/ansible/playbooks/group_vars
+      - ${demo_build_config:-~/demo_build_config}/files/:/ansible/playbooks/files
+      - ${demo_build_config:-~/demo_build_config}/${inventory:-inventory.yml}:/ansible/playbooks/inventory.yml
+      - ${demo_build_config:-~/demo_build_config}/.ansible.cfg:/etc/ansible/ansible.cfg
+      - ${demo_build_config:-~/demo_build_config}/.ssh:/root/.ssh
+  build-test-config-local:
+    build: .
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:edge
+    container_name: build_test_config
+    environment:
+      - GCP_CREDS_JSON=${GCP_CREDS_JSON:-none}
+      - TL_TOKEN=${TL_TOKEN:-none}
+      - TL_LICENSE=${TL_LICENSE:-none}
+      - TL_URL=${TL_URL:-none}
+    entrypoint:
+      - ansible-playbook
+      - -i
+      - inventory.yml
+      - test_config_create.yml
+    volumes:
+      - ${demo_build_config:-/tmp/demo_build_config}/:/files
+  build-config-local:
+    build: .
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:edge
+    container_name: build_test_config
+    entrypoint:
+      - ansible-playbook
+      - -i
+      - inventory.yml
+      - manual_config_create.yml
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/:/files
+  build-config:
+    image: gcr.io/cto-sandbox/cto/ansible-demo-build:${demo_build_tag:-latest}
+    container_name: build_test_config
+    entrypoint:
+      - ansible-playbook
+      - -i
+      - inventory.yml
+      - manual_config_create.yml
+    volumes:
+      - ${demo_build_config:-~/demo_build_config}/:/files

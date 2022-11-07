@@ -1,0 +1,23 @@
+---
+swagger: "2.0"
+info:
+  version: "1"
+  title: "automation_test_api"
+basePath: "/production"
+schemes:
+- "https"
+paths:
+  /automation_test:
+    post:
+      produces:
+      - "text/html"
+      responses:
+        200:
+          description: "200 response"
+      x-amazon-apigateway-integration:
+        uri: "arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:113505086193:function:automation_test/invocations"
+        responses:
+          default:
+            statusCode: "200"
+        httpMethod: "POST"
+        type: "aws"

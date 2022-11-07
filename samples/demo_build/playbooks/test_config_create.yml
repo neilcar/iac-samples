@@ -1,0 +1,65 @@
+- hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  tasks:
+
+  - set_fact: 
+      build: "{{ lookup('env', 'BRANCH_NAME') | replace('_', '-') | lower }}-{{ lookup('env', 'BUILD_NUMBER') }}"
+      twistlock_registry_token: "{{ lookup('env', 'TL_TOKEN') }}"
+      twistlock_license: "{{ lookup('env', 'TL_LICENSE') }}"
+      twistlock_release_url: "{{ lookup('env', 'TL_URL') }}"
+      pwd: "{{ lookup('env', 'PWD') }}"
+      gcp_cred_json: "{{ lookup('env', 'GCP_CRED_JSON') }}"
+      target_user: build-user
+      new_password: "stash.denote.wireless.gallows.tiger.margarine"
+      test_run: true
+
+  - copy:
+      src: /etc/letsencrypt/live/
+      dest: files/wildcard_cert
+    when: test_run == true
+    
+
+  - file: 
+      path: "/hosts/"
+      state: directory
+
+  - file: 
+      path: "/hosts/group_vars/"
+      state: directory
+
+  - file:
+      path: /root/.ssh
+      state: directory
+
+  - name: Generate SSH key
+    shell: 'ssh-keygen -q -t rsa -f /root/.ssh/temp-gce -C "" -N ""'
+    args:
+      creates: /root/.ssh/temp-gce
+    
+
+  - name: Create GCP JSON
+    copy:
+      content: "{{ gcp_cred_json }}"
+      dest: "/etc/ansible/twistlock-cto-lab.json"
+
+  - name: Copy Windows cert into right location for testing
+    copy:
+      src:  /ansible/playbooks/roles/role_windows/files/twistlock_ansible_2019
+      dest: ./roles/role_windows/files/twistlock_ansible_2019
+
+  - copy:
+      src:  /ansible/playbooks/roles/role_windows/files/twistlock_ansible_2019.pub
+      dest: ./roles/role_windows/files/twistlock_ansible_2019.pub
+
+  - template:
+      src: test/.ansible.cfg.j2
+      dest: /etc/ansible/ansible.cfg
+
+  - template:
+      src: test/all.yml.j2
+      dest: "/hosts/group_vars/all.yml"
+
+  - template:
+      src: test/inventory.yml.j2
+      dest: "/hosts/inventory.yml"

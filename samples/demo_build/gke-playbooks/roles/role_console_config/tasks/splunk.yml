@@ -1,0 +1,19 @@
+- name: Start Splunk
+  docker_container:
+    name: splunk
+    image: "{{ splunk_img }}"
+    volumes:
+      - "/opt/splunk/etc:/opt/splunk/etc"
+      - "/opt/splunk/var:/opt/splunk/var"
+    ports:
+      - "8000:8000"
+      - "9997:9997"
+      - "8088:8088"
+      - "1514:1514"
+    env:
+      SPLUNK_START_ARGS: "--accept-license --seed-passwd {{ new_password }}"
+      SPLUNK_ENABLE_LISTEN: 9997
+      SPLUNK_ADD: "tcp 1514"
+    timeout: 200
+    restart_policy: always
+

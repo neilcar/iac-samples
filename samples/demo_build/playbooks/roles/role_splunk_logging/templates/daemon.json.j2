@@ -1,0 +1,7 @@
+{
+    "insecure-registries" : [ "registry.infra.svc.cluster.local:5000" ],
+    "log-driver": "syslog",
+    "log-opts": {
+        "syslog-address": "tcp://{{ hostvars[groups['console'][0]]['ansible_hostname'] }}:3514"
+    }
+}

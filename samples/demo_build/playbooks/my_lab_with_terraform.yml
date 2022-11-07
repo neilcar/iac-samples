@@ -1,0 +1,200 @@
+---
+- hosts: localhost
+# upgrade group_vars/all.yml if necessary
+  gather_facts: yes
+  any_errors_fatal: true
+  tasks:
+  - import_tasks: upgrade_vars.yml
+ #   max_fail_percentage: 1
+
+- hosts: console,k8s-master,k8s-nodes,task-runner,windows
+  gather_facts: no
+  any_errors_fatal: true
+  tasks:
+    - name: Wait for SSH connection
+      import_tasks: waitforssh.yml
+      tags:
+        - delete
+
+- hosts: localhost
+# Generate passwords if necessary
+  gather_facts: no
+  any_errors_fatal: true
+  tasks:
+    - import_tasks: users.yml
+
+- hosts: localhost
+  tasks:
+    - name: Waiting an extra 30 seconds to make sure everything is up
+      pause: seconds=30
+
+- hosts: console,k8s-master,k8s-nodes,task-runner
+  become: true
+  any_errors_fatal: true
+  vars:
+    console_fqdn: "{{ groups['console'][0] | replace('.', '-') | replace('twistlock.com', '') }}"
+  tasks:
+    - name: Install Docker & other common components
+      import_role: name=role_common
+
+- hosts: console
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name: Get certs
+      import_role: name=role_cert
+
+- hosts: k8s-master,k8s-nodes
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name: Install k8s
+      import_role: name=role_k8s_common
+
+- hosts: k8s-master
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name:  Install k8s master
+      import_role: name=role_k8smaster
+
+
+- hosts: k8s-nodes
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name:  Install k8s nodes
+      import_role: name=role_k8snode
+
+- hosts: k8s-master
+  become: true
+  any_errors_fatal: true
+  tasks:
+    - name:  Configure k8s master
+      import_role: name=role_k8s_masterconfig
+
+- hosts: console
+  become: true
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Install Twistlock console
+      import_role: name=role_console
+      tags: external_defender
+
+- hosts: console
+  become: true
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+    gogs_addr: "{{ lookup('gogs',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    jenkins_addr: "{{ lookup('jenkins',groups['console'][0], k8s=twistlock_console_k8s) }}"
+  tasks:
+    - name: Configure Twistlock console
+      import_role: name=role_console_config
+      tags: windows_intel_stream
+
+
+- hosts: k8s-master:k8s-nodes:!console
+  become: true
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Install Defender on other nodes
+      import_tasks: install_defender.yml
+
+
+
+- hosts: windows
+  become: true
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Configure Windows Docker Host
+      import_role: name=role_windows
+      tags: configure_windows
+
+- hosts: console
+  become: true
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Get Defender Powershell Script
+      import_role: name=role_windows_defender_powershell
+      tags: deploy_windows_defender_powershell
+
+- hosts: windows
+  become: true
+  gather_facts: no
+  any_errors_fatal: true
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_consolecn: "{{ lookup('consolecn',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Execute Defender Powershell Script
+      import_role: name=role_windows_defender_execute
+      tags: deploy_windows_defender_powershell
+
+- hosts: console
+  gather_facts: no
+  tasks:
+    - name: Waiting to let Defenders scan all the existing images
+      pause: minutes=1
+
+- hosts: task-runner
+  gather_facts: no
+  vars:
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - name: Run scenarios
+      import_tasks: gce_resume.yml
+      tags:
+        - task-runner
+        - always
+    - import_role: name=role_load
+
+- hosts: console
+  become: true
+  vars:
+    serverless_uuid: "{{ target_user }}-{{ groups['console'][0].split('.')[0] }}-lambda"
+    console_user: "{{ users[0].username }}"
+    console_password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    twistlock_console: "{{ lookup('console',groups['console'][0], k8s=twistlock_console_k8s) }}"
+    twistlock_version: "{{ lookup('console_version', twistlock_console + ' user=' + console_user + ' password=' + console_password) }}"
+  tasks:
+    - debug: var=console_user
+    - name: Run serverless
+      import_role: name=role_serverless
+      tags: serverless
+
+- hosts: task-runner
+  gather_facts: no
+  tasks:
+    - name: Pause task-runner
+      import_tasks: gce_pause.yml

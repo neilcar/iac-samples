@@ -1,0 +1,5 @@
+#!/bin/sh
+{% for item in unseal_keys%}
+docker exec vaultserver vault operator unseal {{ item }}
+{% endfor %}
+docker exec vaultserver vault login {{ root_token }}

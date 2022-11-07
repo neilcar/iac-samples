@@ -1,0 +1,1 @@
+{"name":"Detect Kubernetes authorization failures","_id":104,"type":"kubernetes-audit","script":"jpath(\"annotations\") contains \"authorization.k8s.io/decision:forbid\"","description":"It will detect any Kubernetes authorization annotations with a forbid decision.","message":"authorization failure detected","policyType":"customRuntimeRules"}

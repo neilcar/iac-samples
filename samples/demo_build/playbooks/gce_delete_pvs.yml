@@ -1,0 +1,20 @@
+
+
+- name: Delete persistent disks for k8s pvs
+  gce_pd:
+    name: "{{ item }}"
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    zone: "{{ zone | default( lookup('build_defaults','zone') )  }}"
+    state: absent
+  tags:
+  - delete
+  delegate_to: localhost
+  ignore_errors: true
+  register: result
+  retries: 2
+  delay: 5
+  until: result is succeeded    
+  with_items: "{{ (pd_result.stdout | default('{}') | from_json | json_query('items[*].spec.gcePersistentDisk.pdName'))  }}"
+  when: pd_result is defined

@@ -1,0 +1,238 @@
+## These are the Gogs/Jenkins projects that will be created
+
+# Refer to https://github.com/twistlock/demo_build/wiki/Adding-projects-to-Gogs for details
+
+jenkins_demo_projects:
+  - name: Demo-Build-Wrapper
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_demo-build-wrapper"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_demo-build-wrapper
+    view: run
+
+  - name: Struts-Demo
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_struts-demo"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_struts-demo
+    group: demo
+    view: run
+
+  - name: Struts-Deploy
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_struts-deploy"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_struts-deploy
+    view: run
+
+  - name: Struts-Compromise
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_struts-compromise"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_struts-compromise
+    view: run
+
+  - name: Malware-Download
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_malware-download"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_malware-download
+    group: compromises
+    view: run  
+
+  - name: Cryptominer-Run
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_cryptominer-download"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_cryptominer-download
+    group: compromises
+    view: run  
+
+  - name: Sockshop-Demo
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_sockshop-demo"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_sockshop-demo
+    group: demo
+    view: run
+
+  - name: Sockshop-Deploy
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_sockshop-deploy"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_sockshop-deploy
+    view: run
+
+  - name: Sockshop-Loadgen
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_sockshop-loadgen"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_sockshop-loadgen
+    view: run  
+
+  - name: RASP-Dockerfile
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/rasp_dockerfile"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: rasp_dockerfile
+    view: rasp
+
+  - name: RASP-Struts
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/rasp_struts"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: rasp_struts
+    group: rasp
+    view: rasp
+
+  - name: RASP-CNAF
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/rasp_cnaf"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: rasp_cnaf
+    group: rasp
+    view: rasp
+
+  - name: Struts-Image
+    properties: |
+      <properties>
+        <hudson.model.ParametersDefinitionProperty>
+          <parameterDefinitions>
+            <hudson.model.StringParameterDefinition>
+
+              <name>owner_email</name>
+              <description></description>
+              <defaultValue>{{ emailaddr }}</defaultValue>
+              <trim>false</trim>
+            </hudson.model.StringParameterDefinition>
+
+            <hudson.model.StringParameterDefinition>
+              <name>struts2_version</name>
+              <description></description>
+              <defaultValue>2.3.12</defaultValue>
+              <trim>true</trim>
+            </hudson.model.StringParameterDefinition>
+
+            <hudson.model.StringParameterDefinition>
+              <name>tomcat_version</name>
+              <description></description>
+              <defaultValue>7</defaultValue>
+              <trim>true</trim>
+            </hudson.model.StringParameterDefinition>
+          </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+      </properties>
+    url: "{{ gogs_addr }}/{{ users[0].username }}/container_struts-image"
+    jenkinsFile: Jenkinsfile
+    folder: container_struts-image
+    view: containers
+
+  - name: Hello-Node
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/container_hello-node"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: container_hello-node
+    group: containers
+    view: containers
+
+  - name: Hello-Python
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/container_hello-python"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: container_hello-python
+    group: containers
+    view: containers
+
+  - name: Trusted-Pipeline
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/ops_trusted-pipeline"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: ops_trusted-pipeline
+    view: ops
+
+  - name: DSOP-Config
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/ops_dsop-project"
+    properties: <properties/>
+    jenkinsFile: Jenkins_push_dsop_config
+    folder: ops_dsop-project
+    view: ops
+
+  - name: Lambda-Demo
+    url: "{{ gogs_addr }}/{{ users[0].username }}/serverless_lambda-demo"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: serverless_lambda-demo
+    group: rasp
+    view: serverless
+
+  - name: Fargate-Pipeline
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/rasp_fargate-pipeline"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: rasp_fargate-pipeline
+    group: rasp
+    view: rasp
+
+  - name: Twistlock-Fetch-Config
+    url: "{{ gogs_addr }}/{{ users[0].username }}/ops_twistlock-config"
+    properties: |
+      <properties>
+        <hudson.model.ParametersDefinitionProperty>
+          <parameterDefinitions>
+            <hudson.model.StringParameterDefinition>
+              <name>git_url</name>
+              <description></description>
+              <defaultValue>{{ gogs_addr | urlsplit('hostname') }}/{{ users[0].username }}/ops_twistlock-config</defaultValue>
+              <trim>false</trim>
+            </hudson.model.StringParameterDefinition>
+          </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+      </properties>
+    jenkinsFile: Jenkinsfile  
+    folder: ops_twistlock-config
+    group: ops
+    view: ops
+
+  - name: Twistlock-Push-Config
+    url: "{{ gogs_addr }}/{{ users[0].username }}/ops_twistlock-config"
+    properties: |
+      <properties>
+        <hudson.model.ParametersDefinitionProperty>
+          <parameterDefinitions>
+            <hudson.model.StringParameterDefinition>
+              <name>git_url</name>
+              <description></description>
+              <defaultValue>{{ gogs_addr | urlsplit('hostname') }}/{{ users[0].username }}/ops_twistlock-config</defaultValue>
+              <trim>false</trim>
+            </hudson.model.StringParameterDefinition>
+          </parameterDefinitions>
+        </hudson.model.ParametersDefinitionProperty>
+      </properties>
+    jenkinsFile: Jenkinsfile_push_config 
+    folder: ops_twistlock-config
+    view: ops
+
+  - name: Windows-Container-Loadgen
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_windows-container-loadgen"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_windows-container-loadgen
+    view: run
+
+  - name: Harbor-Registry-Deploy
+    url:  "{{ gogs_addr }}/{{ users[0].username }}/run_harbor-registry-deploy"
+    properties: <properties/>
+    jenkinsFile: Jenkinsfile
+    folder: run_harbor-registry-deploy
+    view: run
+
+struts2_vers:
+  - name: 2.3.12
+    struts2_ver: 2.3.12
+    tomcat_ver: 7
+  - name: 2.3.37
+    struts2_ver: 2.3.37
+    tomcat_ver: 7
+  - name: 2.5.20
+    struts2_ver: 2.5.20
+    tomcat_ver: 9

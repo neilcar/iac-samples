@@ -1,0 +1,19 @@
+FROM {{ jenkins_img }}
+USER root
+
+ENV JAVA_OPTS="-Djenkins.install.runSetupWizard=false"
+
+RUN apt-get update \
+      && apt-get install -y sudo libltdl7 jq \
+      && rm -rf /var/lib/apt/lists/*
+RUN echo "jenkins ALL=NOPASSWD: ALL" >> /etc/sudoers
+ 
+COPY config.groovy /usr/share/jenkins/ref/init.groovy.d/config.groovy
+
+COPY ./twistlock-jenkins-plugin.hpi /tmp/twistlock-jenkins-plugin.hpi
+
+RUN /usr/local/bin/install-plugins.sh kubernetes matrix-auth analysis-core aws-credentials aws-lambda kubernetes-cli dashboard-view github pipeline-github workflow-aggregator ssh-agent pipeline-utility-steps
+
+COPY ./org.jenkinsci.plugins.twistlock.builder.xml /tmp/org.jenkinsci.plugins.twistlock.builder.BuildScanner.xml
+
+EXPOSE 8080

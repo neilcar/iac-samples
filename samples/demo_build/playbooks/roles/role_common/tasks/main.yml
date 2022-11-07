@@ -1,0 +1,12 @@
+- import_tasks: base.yml
+  when: not prebuilt_image
+- import_tasks: prereqs.yml
+  when: not prebuilt_image
+
+# these are settings that can't be added in the base image
+- import_tasks: insecure_reg.yml
+- import_tasks: syslog.yml
+- import_tasks: customization.yml
+
+- import_tasks: restart.yml
+

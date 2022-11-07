@@ -1,0 +1,17 @@
+- name: Copy profile files
+  copy:
+    src: files/profile/
+    dest: "/home/{{ target_user }}/"
+  when: profile_files_copy
+  become: yes
+  become_user: "{{ target_user }}"
+
+- name: Add to .bashrc
+  blockinfile:
+    dest: "/home/{{ target_user }}/.bashrc"
+    block: "{{ bashrc_insert }}"
+    insertbefore: BOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK users"
+  when: bashrc_insert is defined
+  become: yes
+  become_user: "{{ target_user }}"

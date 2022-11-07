@@ -1,0 +1,8 @@
+- name: Start minergate
+  docker_container:
+    name: minergate
+    image: servethehome/monero_cpu_minergate
+    env:
+        username: lies@lies.lies
+        xmrpool: 127.0.0.1
+

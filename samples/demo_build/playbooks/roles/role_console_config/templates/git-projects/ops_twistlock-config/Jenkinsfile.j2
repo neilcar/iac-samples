@@ -1,0 +1,83 @@
+node {
+    
+    stage('Clean') {
+		sh 'mkdir config -p'
+        sh 'rm config/*.* || true'
+ 		sh 'git config --global user.email "automation@twistlock.local"'
+		sh 'git config --global user.name "Automation"'
+
+    }
+
+
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+
+        checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: "https://${env.git_url}.git"]]])
+    }
+
+    stage('Fetch auth/user settings') {
+        withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/users | jq . > config/users.json'
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/groups | jq . > config/groups.json'
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/settings/ldap | jq . > config/settings_ldap.json'
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/credentials | jq . > config/credentials.json'
+
+		}
+    }
+
+    stage('Fetch vuln/compliance config') {
+        withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
+{% if twistlock_version.split('.')[0] == "18" %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/compliance | jq . > config/policy_compliance.json'
+{% else %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/compliance/container | jq . > config/policy_compliance_container.json'
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/compliance/host | jq . > config/policy_compliance_host.json'
+{% endif %}
+{% if twistlock_version.split('.')[0] == "18" %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/cve | jq . > config/policy_vulns.json'
+{% else %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/vulnerability/images | jq . > config/policy_vulns_images.json'
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/vulnerability/host | jq . > config/policy_vulns_host.json'
+{% endif %}
+			
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/settings/registry | jq . > config/settings_registry.json'
+       }
+    }
+
+    stage('Fetch runtime/firewall config') {
+        withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/app/container | jq . > config/policy_firewall_app_container.json'
+{% if twistlock_version.split('.')[0] == "18" %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/app/fargate | jq . > config/policy_firewall_app_fargate.json'
+{% else %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/app/rasp | jq . > config/policy_firewall_app_rasp.json'
+{% endif %}
+{% if twistlock_version.split('.')[0] == "18" %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/network | jq . > config/policy_firewall_network.json'
+{% else %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/network/container | jq . > config/policy_firewall_network_container.json'
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/firewall/network/host | jq . > config/policy_firewall_network_host.json'
+{% endif %}
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/runtime/container | jq . > config/policy_runtime_container.json'
+{% if twistlock_version.split('.')[0] == "18" %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/runtime/app/fargate | jq . > config/policy_runtime_app_fargate.json'
+{% else %}
+sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/runtime/rasp | jq . > config/policy_runtime_rasp.json'
+{% endif %}
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/runtime/host | jq . > config/policy_runtime_host.json'
+        	sh 'curl -s -k -u $TL_USER:$TL_PASS https://$TL_CONSOLE/api/v1/policies/runtime/serverless | jq . > config/policy_runtime_serverless.json'
+
+		} 
+    }
+
+    stage('Push to git') {
+        withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
+                
+			sh 'git add .'
+			sh 'git commit -m "Update to Twistlock config" --allow-empty'
+            sh "git push https://$TL_USER:$TL_PASS@${env.git_url}.git HEAD:master"
+                
+		}
+	}
+
+}

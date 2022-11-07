@@ -1,0 +1,1 @@
+{"name":"File exists","previousName":"","title":"Check if file /tmp/foo.txt exists","script":"if [ ! -f /tmp/foo.txt ]; then\n    echo \"File not found!\"\n    exit 1\nfi","severity":"high"}

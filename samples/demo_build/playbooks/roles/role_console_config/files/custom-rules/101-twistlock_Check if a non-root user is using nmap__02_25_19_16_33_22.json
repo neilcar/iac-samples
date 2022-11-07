@@ -1,0 +1,1 @@
+{"name":"Check if a non-root user is using nmap?","_id":101,"type":"processes","script":"proc.name = \"nmap\" and (proc.interactive or proc.user != \"root\")","description":"This rule will check if a non-root user is using interactively nmap?","message":"unexpected interactive port scanner %proc.name was spawned","policyType":"customRuntimeRules"}

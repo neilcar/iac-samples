@@ -1,0 +1,119 @@
+- name: Set domain root for registry
+  set_fact: domain_root="{{ groups['console'][0] }}"
+  when: domain_root is undefined
+
+- name: Add cert Directory
+  file:
+    path: "/opt/docker-registry/cert"
+    state: directory
+  become: true
+
+- name: Add docker cert.d Directory
+  file:
+    path: "/etc/docker/certs.d/registry.infra.svc.cluster.local:5000"
+    state: directory
+  become: true
+
+- name: Install pyOpenSSL
+  pip:
+    name: pyOpenSSL
+    state: latest
+
+- name: Generate a Private Key for registry using OpenSSL
+  openssl_privatekey:
+    path: "/opt/docker-registry/cert/registry.key"
+  become: true
+
+- name: Generate CSR for registry using OpenSSL
+  openssl_csr:
+    path: "/opt/docker-registry/cert/registry.csr"
+    privatekey_path: "/opt/docker-registry/cert/registry.key"
+    digest: sha512
+    common_name: registry.infra.svc.cluster.local
+  become: true
+
+- name: Generate a Self Signed OpenSSL certificate for registry
+  openssl_certificate:
+    path: "/opt/docker-registry/cert/registry.crt"
+    privatekey_path: "/opt/docker-registry/cert/registry.key"
+    csr_path: "/opt/docker-registry/cert/registry.csr"
+    provider: selfsigned
+  become: true
+
+- name: Check existing secrets
+  command: "kubectl get secrets tlscert -n infra"
+  register: tlscert_secret
+  failed_when: "'ThisDoesntExist' in tlscert_secret.stderr" # Always succeed, check value below
+
+- name: Set domain TLS certificate and key as secrets
+  command: "kubectl create secret generic tlscert --from-file=/opt/docker-registry/cert/registry.crt --from-file=/opt/docker-registry/cert/registry.key -n infra"
+  when: tlscert_secret.stderr is search("NotFound")
+  
+- name: Copy cert to Docker certs
+  copy:
+    remote_src: true
+    src: /opt/docker-registry/cert/registry.crt
+    dest: /etc/docker/certs.d/registry.infra.svc.cluster.local:5000/ca.crt
+
+- name: Copy registry YAML
+  template:
+    src: registry/registry.yml.j2
+    dest: /opt/registry.yml
+
+- name: Start registry
+  command: kubectl apply -f /opt/registry.yml
+
+- name: Get the Cluster IP for the Registry
+  shell: kubectl get services registry -n infra -o jsonpath='{.spec.clusterIP}'
+  register: registry_clusterIP
+
+- name: Add hostname and IP to etc/hosts
+  shell: echo "{{registry_clusterIP.stdout}} registry.infra.svc.cluster.local" >> /etc/hosts
+  retries: 8
+  delay: 1
+  # concurrency issue with running sometimes.
+  register: result
+  until: result.rc == 0
+
+- name: Add hostname and IP to etc/hosts on other nodes
+  shell: echo "{{registry_clusterIP.stdout}} registry.infra.svc.cluster.local" >> /etc/hosts
+  connection: local
+  delegate_to: "{{ item }}"
+  with_items: "{{ [groups['k8s-nodes']] }}"
+  retries: 8
+  delay: 1
+  # concurrency issue with running sometimes.
+  register: result
+  until: result.rc == 0
+
+- name: Wait on registry to start
+  wait_for:
+    delay: 60
+    host: "registry.infra.svc.cluster.local"
+    port: 5000
+    state: started
+    timeout: 600
+
+- name: Add AWS credentials (18.11+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/credentials"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    body: '{"secret":{"plain":"{{ aws_secret_access_key }}"},"serviceAccount":{},"type":"aws","_id":"AWS","accountID":"{{ aws_access_key_id }}"}'
+  when: twistlock_version.split('.')[0] != '2'
+  
+- name: Start Registry Scan
+  uri:
+    url: "{{ twistlock_console }}/api/v1/registry/scan"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    body: '{}'
+

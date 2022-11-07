@@ -1,0 +1,24 @@
+- name: Get master facts
+  setup:
+  delegate_to: "{{ groups['k8s-master'][0] }}"  
+
+- name: create a place for myclient.sh
+  file: dest="/opt/myclient" owner=root group=root mode=0755 state=directory
+
+- name: Copy my_client.sh
+  template:
+    src: my_client.sh.j2
+    dest: /opt/myclient/my_client.sh
+    mode: 0755
+  with_items: "{{ my_server_ports }}"
+
+- name: copy my_client.service
+  copy:
+    src: "{{ role_path }}/files/my_client.service"
+    dest: /etc/systemd/system/my_client.service
+
+- name: Start Host Client Service
+  service:
+    name: my_client.service
+    state: started
+    enabled: true

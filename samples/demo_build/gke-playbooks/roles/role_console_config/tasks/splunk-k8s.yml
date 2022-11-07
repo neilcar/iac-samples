@@ -1,0 +1,8 @@
+- name: Copy splunk YAML
+  template:
+    src: splunk/splunk.yml.j2
+    dest: /opt/splunk.yml
+
+- name: Start Splunk
+  command: "kubectl apply -f /opt/splunk.yml"
+

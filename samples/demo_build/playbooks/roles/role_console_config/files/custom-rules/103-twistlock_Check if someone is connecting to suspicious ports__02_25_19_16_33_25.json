@@ -1,0 +1,1 @@
+{"name":"Check if someone is connecting to suspicious ports?","_id":103,"type":"network-outgoing","script":"net.outgoing_port in (8545, 8332, 51235, 22555)","description":"Check if someone is doing connections to common crypto miners ports.","message":"an outgoing connection to %net.outgoing_ip:%net.outgoing_port was detected","policyType":"customRuntimeRules"}

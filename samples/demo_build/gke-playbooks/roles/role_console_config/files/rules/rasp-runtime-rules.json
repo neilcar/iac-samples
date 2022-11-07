@@ -1,0 +1,113 @@
+{
+    "_id": "containerRuntime",
+    "rules": [
+        {
+            "processes": {
+                "effect": "alert",
+                "checkNewBinaries": true,
+                "checkCryptoMiners": true,
+                "whitelist": [
+                    "java"
+                ],
+                "blacklist": []
+            },
+            "resources": {
+                "images": [
+                    "*"
+                ],
+                "containers": [
+                    "*"
+                ],
+                "appIDs": [
+                    "rasp-struts:*"
+                ],
+                "labels": [],
+                "hosts": [],
+                "services": [],
+                "functions": []
+            },
+            "dns": {
+                "effect": "alert",
+                "whitelist": [
+                    "*.cluster.local"
+                ]
+            },
+            "network": {
+                "effect": "alert",
+                "whitelistListeningPorts": [
+                    {
+                        "start": 8005,
+                        "end": 8005
+                    },
+                    {
+                        "start": 8009,
+                        "end": 8009
+                    },
+                    {
+                        "start": 8080,
+                        "end": 8080
+                    }
+                ],
+                "whitelistOutboundPorts": [],
+                "whitelistIPs": []
+            },
+            "customRules": [],
+            "name": "Rasp-Struts"
+        },
+        {
+            "processes": {
+                "effect": "alert",
+                "checkNewBinaries": true,
+                "checkCryptoMiners": true,
+                "whitelist": [
+                    "curl",
+                    "sleep"
+                ],
+                "blacklist": []
+            },
+            "resources": {
+                "images": [
+                    "*"
+                ],
+                "containers": [
+                    "*"
+                ],
+                "appIDs": [
+                    "rasp-dockerfile:*"
+                ],
+                "labels": [],
+                "hosts": [],
+                "services": [],
+                "functions": []
+            },
+            "dns": {
+                "effect": "alert",
+                "whitelist": [
+                    "*.twistlock.com"
+                ]
+            },
+            "network": {
+                "effect": "alert",
+                "whitelistListeningPorts": [
+                    {
+                        "start": 8005,
+                        "end": 8005
+                    },
+                    {
+                        "start": 8009,
+                        "end": 8009
+                    },
+                    {
+                        "start": 8080,
+                        "end": 8080
+                    }
+                ],
+                "whitelistOutboundPorts": [],
+                "whitelistIPs": []
+            },
+            "customRules": [],
+            "name": "Rasp-Dockerfile"
+        }
+    ],
+    "learningDisabled": false
+}

@@ -1,0 +1,27 @@
+// Be very careful with paths here -- because we're running Jenkins inside a container
+// we can't just use the $PWD/$WORKSPACE environment variables.
+// ...and docker-compose doesn't let us use sub-paths within a named volume.
+
+node {
+
+    withCredentials([file(credentialsId: 'GCP_auth_json', variable: 'GCP_JSON'), file(credentialsId: 'GCP_cto-demos-jenkins-svc-account', variable: 'GCP_CTO_DEMOS_JSON'), string(credentialsId: 'AWS_ACCESS_KEY', variable: 'AWS_ACCESS_KEY'), string(credentialsId: 'AWS_SECRET_KEY', variable: 'AWS_SECRET_KEY')]) {
+
+        stage('Checkout repo') {
+            /* Let's make sure we have the repository cloned to our workspace */
+
+            checkout scm
+            
+        }
+
+        stage('Build images') {
+            sh "sudo curl -L \"https://github.com/docker/compose/releases/download/1.23.2/docker-compose-\$(uname -s)-\$(uname -m)\" -o /usr/local/bin/docker-compose"
+            sh "sudo chmod +x /usr/local/bin/docker-compose"
+            sh "cp $GCP_JSON playbooks/image_build/files/twistlock-cto-lab.json"
+            sh "cp $GCP_JSON playbooks/image_build/files/twistlock-cto-partners.json"
+            sh "cp $GCP_CTO_DEMOS_JSON playbooks/image_build/files/twistlock-cto-demos.json"
+            sh "/usr/local/bin/docker-compose -f docker-compose-image-build.yaml run packercto"
+            
+        }
+
+    }
+}

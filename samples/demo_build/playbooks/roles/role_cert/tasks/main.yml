@@ -1,0 +1,26 @@
+# This should never happen, leaving set_fact
+- name: Set domain root
+  set_fact: domain_root="{{ groups['console'][0] }}"
+  when: domain_root is undefined
+  tags: always
+
+# find out if we have a current cert
+- name: Get timestamp
+  stat:
+    path: ./files/wildcard_cert/{{ domain_root }}/privkey.pem
+  register: stat_privkey
+  delegate_to: localhost
+
+# Copy the certs if they're <60 days old
+- import_tasks: copy_local_cert.yml
+  when: (stat_privkey.stat.ctime is defined) and (((ansible_date_time.epoch | float) - (stat_privkey.stat.ctime )) < 5184000 )
+
+# If cert doesn't exist or it's older than 60 days, renew / get a new one.
+- import_tasks: letsencrypt.yml
+  when: (not (stat_privkey.stat.ctime is defined) or (((ansible_date_time.epoch | float) - (stat_privkey.stat.ctime )) > 5184000 ))
+
+- import_tasks: install_tls_cert.yml
+  when: not cert_only
+
+
+

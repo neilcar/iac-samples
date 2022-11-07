@@ -1,0 +1,27 @@
+- hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  vars_prompt:
+    - name: "target_user"
+      prompt:  "What is your GCP username (just the name with @twistlock.com)?"
+    - name: "twistlock_registry_token"
+      private: yes
+      prompt: "What is your Twistlock registry token?"
+    - name: "twistlock_license"
+      private: yes
+      prompt: "What is your Twistlock license (just the base64 blob)?"
+    - name: "gcp_cred_json"
+      prompt:  "Paste in the contents of your GCP credentials JSON"
+      private: yes
+    - name: "twistlock_release_url"
+      prompt: "What is the URL to the Twistlock release to install?"
+    - name: "new_password"
+      prompt: "Enter a master password"
+      private: yes 
+    - name: "build"
+      prompt: "Enter the unique host prefix for this build (XXXX in XXXX.pfox.lab.twistlock.com)"
+
+  tasks:
+  - set_fact:
+      test_run: false
+  - import_tasks: config_create.yml

@@ -1,0 +1,19 @@
+- name: Build cert json
+  command: cat /tmp/twistlock_console.pem 
+  register: console_cert
+
+- debug: msg='{"consoleCaCert":"","consoleCustomCert":{"encrypted":"","plain":"{{ console_cert.stdout | replace('\n', '\\n') }}"} }'
+  register: cert_json
+
+- debug: var=cert_json.msg
+
+- name: POST the json
+  uri:
+    url: " {{ twistlock_console }}/api/v1/settings/console-certificate"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: "{{ cert_json.msg }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no

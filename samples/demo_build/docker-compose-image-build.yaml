@@ -1,0 +1,31 @@
+version: '3.4'
+
+volumes:
+  data:
+    name: jenkins_home
+    external: true
+services:
+   packercto:
+     image: hashicorp/packer:light
+     command: build -force /files/workspace/image_build/playbooks/image_build/files/demo_environment.json
+     volumes:
+       - data:/files
+
+     environment:
+       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+       - AWS_REGION=us-east-1
+       - IMAGE_BUILD=true
+   test:
+     image: hashicorp/packer:light
+     entrypoint: bash -c "sleep 1000"
+       - data:/files
+     environment:
+       - AWS_ACCESS_KEY=${AWS_ACCESS_KEY}
+       - AWS_SECRET_KEY=${AWS_SECRET_KEY}
+       - AWS_REGION=us-east-1
+       - IMAGE_BUILD=true
+
+# Be very careful with paths here -- because we're running Jenkins inside a container
+# we can't just use the $PWD/$WORKSPACE environment variables.
+# ...and docker-compose doesn't let us use sub-paths within a named volume.

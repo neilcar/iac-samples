@@ -1,0 +1,48 @@
+- name: Get host name
+  set_fact: target_host={{ ansible_host }}
+  
+- set_fact: dns_zone="lab.twistlock.com"
+  when: dns_zone is not defined
+
+- set_fact: dns_project_id="cto-sandbox"
+  when: dns_project_id is not defined
+
+- name: Create wildcard DNS entry for console
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ dns_project_id | default( lookup('build_defaults','dns_project_id') ) }}"
+    record: "*.{{ target_host  | replace('_', '-') }}"
+    zone: "{{ dns_zone | default( lookup('build_defaults','dns_zone') ) }}"
+    type: CNAME
+    value: "{{ target_host }}."
+    overwrite: true
+    ttl: 60
+  delegate_to: localhost
+
+
+- name: Create other DNS entry for console
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ dns_project_id | default( lookup('build_defaults','dns_project_id') ) }}"
+    record: "{{ item }}-{{ target_host | replace('_', '-')  }}"
+    zone: "{{ dns_zone | default( lookup('build_defaults','dns_zone') ) }}"
+    type: CNAME
+    value: "{{ target_host }}."
+    overwrite: true
+    ttl: 60
+  delegate_to: localhost
+  with_items:
+    - console
+    - jenkins
+    - splunk
+    - k8s
+    - sockshop
+    - defender
+    - phpdemo
+    - dvwa
+    - gogs
+    - mail
+    - harbor
+    - notary

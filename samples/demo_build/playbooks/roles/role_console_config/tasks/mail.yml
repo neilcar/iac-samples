@@ -1,0 +1,37 @@
+- name: Copy mail yaml
+  template:
+    src: mail/mail.yml.j2
+    dest: /opt/mail.yml
+  when: twistlock_console_k8s
+
+- name: Create mail deployment
+  shell: kubectl apply -f /opt/mail.yml
+  when: twistlock_console_k8s
+
+- name: Add Alerts Email (19.07)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/alert-profiles"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: '{"name":"Email Alert","previousName":"","_id":"Alerts Email","email":{"enabled":true,"smtpAddress":"mail.infra.svc.cluster.local","port":25,"credentialId":"","from":"TwistlockConsole@infra.local","ssl":false,"recipients":["Alerts@infra.local"]},"slack":{},"jira":{},"securityCenter":{},"gcpPubsub":{},"securityHub":{},"securityAdvisor":{},"pagerduty":{},"webhook":{},"policy":{"containerAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"containerCompliance":{"enabled":true,"allRules":true,"rules":[]},"containerNetworkFirewall":{"enabled":true,"allRules":true,"rules":[]},"containerRuntime":{"enabled":true,"allRules":true,"rules":[]},"containerVulnerability":{"enabled":true,"allRules":true,"rules":[]},"defender":{"enabled":true,"allRules":true,"rules":[]},"docker":{"enabled":true,"allRules":true,"rules":[]},"hostAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"hostCompliance":{"enabled":true,"allRules":true,"rules":[]},"hostRuntime":{"enabled":true,"allRules":true,"rules":[]},"hostVulnerability":{"enabled":true,"allRules":true,"rules":[]},"incident":{"enabled":true,"allRules":true,"rules":[]},"kubernetesAudit":{"enabled":true,"allRules":true,"rules":[]},"raspAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"raspRuntime":{"enabled":true,"allRules":true,"rules":[]},"serverless":{"enabled":true,"allRules":true,"rules":[]},"cloudDiscovery":{"enabled":true,"allRules":true,"rules":[]}},"provider":{"type":"email","display":"Email","icon":"icon-email"}}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+  when: twistlock_version <= "19.07.363"
+  #when: twistlock_version.split('.')[0] = "19.07"
+  
+- name: Add Alerts Email (19.09+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/alert-profiles"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: '{"policy":{"containerAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"hostAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"raspAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"hostRuntime":{"enabled":true,"allRules":true,"rules":[]},"incident":{"enabled":true,"allRules":true,"rules":[]},"containerCompliance":{"enabled":true,"allRules":true,"rules":[]},"containerRuntime":{"enabled":true,"allRules":true,"rules":[]},"raspRuntime":{"enabled":true,"allRules":true,"rules":[]},"defender":{"enabled":true,"allRules":true,"rules":[]},"cloudDiscovery":{"enabled":true,"allRules":true,"rules":[]},"serverlessRuntime":{"enabled":true,"allRules":true,"rules":[]},"containerVulnerability":{"enabled":true,"allRules":true,"rules":[]},"hostVulnerability":{"enabled":true,"allRules":true,"rules":[]},"serverlessAppFirewall":{"enabled":true,"allRules":true,"rules":[]},"containerNetworkFirewall":{"enabled":true,"allRules":true,"rules":[]},"kubernetesAudit":{"enabled":true,"allRules":true,"rules":[]},"hostCompliance":{"enabled":true,"allRules":true,"rules":[]},"docker":{"enabled":true,"allRules":true,"rules":[]}},"email":{"enabled":true,"smtpAddress":"mail.infra.svc.cluster.local","port":25,"from":"TwistlockConsole@infra.local","recipients":["Alerts@infra.local"]},"jira":{},"slack":{},"securityCenter":{},"gcpPubsub":{},"pagerduty":{},"webhook":{},"securityHub":{},"securityAdvisor":{},"name":"Email Alert"}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+  when: twistlock_version >= "19.09.445"
+  #when: twistlock_version.split('.')[1] <= "07"
+  
+

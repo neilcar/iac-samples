@@ -1,0 +1,22 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: jira-ingress
+  namespace: infra
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    kubernetes.io/tls-acme: 'true'
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+spec:
+  rules:
+  - host: jira-{{ groups['k8s-master'][0] }}
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: jira-app
+          servicePort: 8080
+  tls:
+  - secretName: console-cert
+    hosts:
+    - jira-{{ groups['k8s-master'][0] }}

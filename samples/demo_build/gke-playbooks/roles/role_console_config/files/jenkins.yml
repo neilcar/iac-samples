@@ -1,0 +1,139 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins
+  namespace: infra
+
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1beta1
+metadata:
+  name: jenkins
+rules:
+- apiGroups: [""]
+  resources: ["namespaces"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["services"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: ["*"]
+  resources: ["deployments"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/exec"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/portforward"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["pods/log"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+- apiGroups: [""]
+  resources: ["secrets"]
+  verbs: ["create","delete","get","list","patch","update","watch"]
+
+---
+apiVersion: rbac.authorization.k8s.io/v1beta1
+kind: ClusterRoleBinding
+metadata:
+  name: jenkins
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: jenkins
+subjects:
+- kind: ServiceAccount
+  name: jenkins
+  namespace: infra
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jenkinshome
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: jenkins
+  namespace: infra
+spec:
+  selector:
+    app: jenkins
+  type: LoadBalancer
+  ports:
+    - name: jenkinshttp
+      port: 8080
+    - name: jenkins-sshd
+      port: 8022
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jenkins
+  namespace: infra
+  labels:
+    apps: jenkins
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jenkins
+  template:
+    metadata:
+      labels:
+        app: jenkins
+    spec:
+      serviceAccountName: jenkins
+      securityContext:
+        runAsUser: 1
+        runAsGroup: 1
+      containers:
+        - name: jenkins
+          image: jenkins/jenkins:lts
+          ports:
+            - name: jenkinsweb
+              containerPort: 8080
+            - name: jenkins-sshd
+              containerPort: 8022
+            - name: jnlp
+              containerPort: 50000
+              hostPort: 50000
+          volumeMounts:
+          - name: jenkinshomepv
+            mountPath: "/var/jenkins_home"
+          - name: docker-sock
+            mountPath: "/var/run/docker.sock"
+          - name: docker-exe
+            mountPath: "/usr/bin/docker"
+          - name: kubectl-exe
+            mountPath: "/usr/bin/kubectl"
+      volumes:
+      - name: jenkinshomepv
+        persistentVolumeClaim:
+          claimName: jenkinshome
+      - name: docker-sock
+        hostPath:
+            path: /var/run/docker.sock
+            type: File
+      - name: docker-exe
+        hostPath:
+            path: /usr/bin/docker
+            type: File
+      - name: kubectl-exe
+        hostPath:
+            path: /usr/bin/kubectl
+            type: File

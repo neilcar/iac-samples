@@ -1,0 +1,8 @@
+- hosts: console
+  become: true
+  any_errors_fatal: true
+  vars:
+    cert_only: true
+  tasks:
+    - name: Get certs
+      import_role: name=role_cert

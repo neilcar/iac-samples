@@ -1,0 +1,38 @@
+all:
+  localhost:
+    ansible_connection: local
+  children:
+    console:
+      hosts:
+        {{ build }}.{{ target_user }}.lab.twistlock.com:
+      vars:
+        machine_type: n1-standard-4
+        disksize: 100 
+    k8s-master:
+      hosts:
+        {{ build }}.{{ target_user }}.lab.twistlock.com:
+      vars:
+        machine_type: n1-standard-4
+        disksize: 100 
+    k8s-nodes:
+      hosts:
+        node-{{ build }}.{{ target_user }}.lab.twistlock.com:
+      vars:
+        machine_type: n1-standard-2
+        disksize: 10        
+    task-runner:
+      hosts:
+        temp-{{ build }}.{{ target_user }}.lab.twistlock.com:
+      vars:
+        machine_type: n1-standard-2
+        disksize: 10
+    windows:
+      hosts:
+        windows-{{ build }}.{{ target_user }}.lab.twistlock.com:
+      vars:
+        machine_type: n1-standard-2
+        disksize: 100
+        ansible_connection: ssh
+        ansible_ssh_user: twistlock
+        ansible_ssh_private_key_file: ./roles/role_windows/files/twistlock_ansible_2019
+        windowsimage: "https://www.googleapis.com/compute/v1/projects/cto-sandbox/global/images/windows2019-demo-build-v2"

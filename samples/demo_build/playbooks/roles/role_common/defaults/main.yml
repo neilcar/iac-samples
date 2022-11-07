@@ -1,0 +1,5 @@
+
+docker_pkg: docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb    
+docker_dl_url: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64
+
+prebuilt_image: true

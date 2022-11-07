@@ -1,0 +1,128 @@
+---
+- hosts: localhost
+  gather_facts: yes
+  become: yes
+  become_method: sudo
+  vars:
+    docker_pkg: docker-ce_18.06.2~ce~3-0~ubuntu_amd64.deb    
+    docker_dl_url: https://download.docker.com/linux/ubuntu/dists/xenial/pool/stable/amd64
+    # target_user is really only useful in the context of demo_build --
+    # setting it to root here to avoid spurious errors
+    target_user: root
+
+  tasks:
+
+  - import_tasks: tasks/base.yml
+  - import_tasks: tasks/prereqs.yml
+
+#  - name: Install Docker & other common components to prepare the image
+    #include_role: name=role_common
+    # - name: create a place for docker config
+    #   file: dest="/etc/docker" owner=root group=root mode=0755 state=directory
+
+    # - name: Clean out yum (CentOS)
+    #   command: yum clean all
+    #   when: ansible_distribution=="CentOS"
+
+    # - name: "Updating repositories"
+    #   apt:
+    #     update_cache: yes
+    #   when: ansible_distribution=="Ubuntu"
+
+    # - name: "Installing Aptitude"
+    #   apt: name=aptitude state=latest
+    #   when: ansible_distribution=="Ubuntu"
+
+    # - name: "Installing dependencies"
+    #   apt: 
+    #     name: "{{ packages }}" 
+    #     state: latest
+    #   when: ansible_distribution=="Ubuntu"
+    #   vars:
+    #     packages:
+    #     - init-system-helpers
+    #     - lsb-base
+    #     - libc6
+    #     - libdevmapper1.02.1
+    #     - libltdl7
+    #     - libseccomp2
+    #     - libsystemd0
+    #     - aufs-tools
+    #     - cgroupfs-mount
+    #     - pigz
+    #     - apache2-utils
+    #     - default-jre
+
+    # - name: "Update the OS"
+    #   package: name=* state=latest
+
+    # - name: "Removing superfluous dependencies"
+    #   apt:
+    #     autoremove: yes
+    #     autoclean: yes
+    #   when: ansible_distribution=="Ubuntu"
+
+    # - name: Download Docker install script
+    #   get_url: 
+    #     url: http://get.docker.com 
+    #     dest: /opt/get-docker.sh 
+
+    # - name: Download Docker .deb since 18.05 is broke
+    #   get_url:
+    #     url: "{{ docker_dl_url }}/{{ docker_pkg }}"
+    #     dest: "/root/{{ docker_pkg }}"
+
+    # - name: Install Docker
+    #   # command: sh /opt/get-docker.sh
+    #   command: "dpkg -i /root/{{ docker_pkg }}"
+
+    # - name: let's set docker to be available to nonroot
+    #   group: name=docker state=present
+
+    # - name: Set various services to be running and to restart on reboot
+    #   service: name={{ item }} state=started enabled=true
+    #   with_items:
+    #       - docker
+
+    # - name: "Install mosh"
+    #   package: name=mosh state=latest
+
+    # - name: Add user to Docker group
+    #   user: name={{ ansible_user  }}
+    #         group=docker
+    #         append=yes
+
+    # - name: Get host name
+    #   set_fact: target_host={{ ansible_host }}
+
+    #   # Need this to use the Ansible docker_* modules...
+    # - name: Install python
+    #   package: name={{ item }} state=latest
+    #   with_items:
+    #     - python-pip
+    #     - python-dev
+    #     - python-setuptools
+    #     - jq
+  
+
+    #   # It would be nice to use Ansible native commands here...
+    #   # ...or even to use pip to manage this.
+    #   # Unfortunately, Docker have made it difficult.
+    # - name: Install docker-compose
+    #   #command: curl -L https://github.com/docker/compose/releases/download/1.17.0/docker-compose-{{ ansible_system }}-{{ ansible_architecture }} -o /usr/local/bin/docker-compose
+    #   get_url: 
+    #     url : https://github.com/docker/compose/releases/download/1.17.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}
+    #     dest: /usr/local/bin/docker-compose
+    #     mode: 'u+x,g+x'
+
+
+    # - name: Set docker-compose +x
+    #   file:
+    #     path: /usr/local/bin/docker-compose
+    #     mode: 0755
+
+    # - name: Get docker-py module docker
+    #   pip:
+    #     name: docker, docker-compose
+    #     state: forcereinstall
+

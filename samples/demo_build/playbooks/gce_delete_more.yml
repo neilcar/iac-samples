@@ -1,0 +1,50 @@
+- name: Delete static IP for {{ target_host }}
+  gce_eip:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    name: "{{ lookup('shorthostname', target_host) }}"
+    region: "{{ region | default( lookup('build_defaults','region') )  }}"
+    state: absent
+  register: eip
+  delegate_to: localhost
+  ignore_errors: yes
+
+- name: Delete DNS entry for {{ target_host }}
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    record: "{{ target_host }}"
+    zone: "{{ dns_zone | default( lookup('build_defaults','dns_zone') ) }}"
+    type: A
+    state: absent
+    overwrite: true
+  delegate_to: localhost
+  ignore_errors: yes
+
+- name: Delete wildcard DNS entry for {{ target_host }}
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    record: "*.{{ target_host }}"
+    zone: "{{ dns_zone | default( lookup('build_defaults','dns_zone') ) }}"
+    type: CNAME
+    state: absent
+    overwrite: true
+  delegate_to: localhost
+  ignore_errors: yes
+
+- name: Delete non-HTTPS DNS entry for {{ target_host }}
+  gcdns_record:
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    record: "{{ target_host.split('.')[0] }}-clear.lab.twistlock.com"
+    zone: "{{ dns_zone | default( lookup('build_defaults','dns_zone') ) }}"
+    type: A
+    overwrite: true
+    state: absent
+  delegate_to: localhost
+  ignore_errors: yes

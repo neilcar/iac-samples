@@ -1,0 +1,2 @@
+cert_only: false
+credentials_file_dns: "{{ credentials_file }}"

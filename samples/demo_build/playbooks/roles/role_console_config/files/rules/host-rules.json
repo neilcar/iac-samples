@@ -1,0 +1,125 @@
+{
+    "_id": "hostRuntime",
+    "owner": "system",
+    "rules": [
+        {
+            "name": "Default - alert on suspicious runtime behavior",
+            "previousName": "Default - alert on suspicious runtime behavior",
+            "advancedProtection": "alert",
+            "staticProfiles": true,
+            "resources": {
+                "hosts": [
+                    "*"
+                ],
+                "services": []
+            },
+            "forensic": {
+                "sshdEnabled": true,
+                "sudoEnabled": true,
+                "serviceActivitiesEnabled": false,
+                "dockerEnabled": true,
+                "readonlyDockerEnabled": false
+            },
+            "capabilities": {
+                "DOCKER": "alert",
+                "DOCKER_SOCKET": "alert",
+                "GCLOUD": "alert",
+                "HOSTS_CONFIG": "alert",
+                "INSTALLER": "alert",
+                "KUBERNETES": "alert",
+                "NET": "alert",
+                "OPENSHIFT": "alert",
+                "PRIVILEGED_PROCESSES": "alert",
+                "SECRETS_MANAGER": "alert",
+                "SERVICE_OPERATOR": "alert",
+                "SHELL": "alert",
+                "SSH": "alert",
+                "SYSTEM_LOGS": "alert",
+                "USERS_ADMIN": "alert"
+            },
+            "blacklist": {},
+            "whitelist": {},
+            "network": {
+                "effect": "alert",
+                "blacklistIPs": [],
+                "blacklistListeningPorts": [],
+                "whitelistListeningPorts": [],
+                "blacklistOutboundPorts": [],
+                "whitelistOutboundPorts": [],
+                "whitelistIPs": [],
+                "detectPortScan": false
+            },
+            "dns": {
+                "effect": "alert",
+                "whitelist": [],
+                "blacklist": []
+            },
+            "logInspectionRules": [
+                {
+                    "path": "/var/log/auth.log",
+                    "regex": [
+                        "Bad protocol version identification",
+                        "POSSIBLE BREAK-IN ATTEMPT",
+                        "Did not receive identification string from",
+                        "(llegal|Invalid) user",
+                        "authentication error",
+                        "PAM: Authentication failure",
+                        "Corrupted check bytes on input",
+                        "not allowed because account is locked",
+                        "maximum authentication attempts exceeded"
+                    ]
+                }
+            ],
+            "anomalousAppDetection": {
+                "enabled": true,
+                "whitelist": [],
+                "blacklist": []
+            },
+            "fileIntegrityRules": [
+                {
+                    "path": "/tmp/application.cfg",
+                    "write": true,
+                    "read": true,
+                    "procWhitelist": [],
+                    "exclusions": []
+                }
+            ],
+            "customRules": [
+                {
+                    "name": "Check if a non-root user is using nmap?",
+                    "_id": 101,
+                    "type": "processes",
+                    "script": "proc.name = \"nmap\" and (proc.interactive or proc.user != \"root\")",
+                    "description": "This rule will check if a non-root user is using interactively nmap?",
+                    "message": "unexpected interactive port scanner %proc.name was spawned",
+                    "selected": true,
+                    "effect": "alert",
+                    "action": "audit"
+                },
+                {
+                    "name": "Check if a non-root user is writing into etc.",
+                    "_id": 102,
+                    "type": "filesystem",
+                    "script": "proc.user != \"root\" and file.dir = \"/etc\"",
+                    "description": "Checks if a process is writing into the filesystem directory of /etc",
+                    "message": "%proc.name wrote to file %file.path",
+                    "selected": true,
+                    "effect": "alert",
+                    "action": "audit"
+                },
+                {
+                    "name": "Check if someone is connecting to suspicious ports?",
+                    "_id": 103,
+                    "type": "network-outgoing",
+                    "script": "net.outgoing_port in (8545, 8332, 51235, 22555)",
+                    "description": "Check if someone is doing connections to common crypto miners ports.",
+                    "message": "an outgoing connection to %net.outgoing_ip:%net.outgoing_port was detected",
+                    "selected": true,
+                    "effect": "alert",
+                    "action": "audit"
+                }
+            ]
+        }
+    ],
+    "learningDisabled": false
+}

@@ -1,0 +1,6 @@
+<org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl plugin="plain-credentials@1.5">
+    <scope>GLOBAL</scope>
+    <id>k8s_config</id>
+    <description></description>
+    <secret>{{ lookup('file','files/kubeconfig/{{ domain_root }}/config') }}</secret>
+</org.jenkinsci.plugins.plaincredentials.impl.StringCredentialsImpl>

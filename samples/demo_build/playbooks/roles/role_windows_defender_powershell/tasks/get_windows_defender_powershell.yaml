@@ -1,0 +1,14 @@
+# Pull the defender.ps1 script from the API
+    
+- name: Get defender powershell script
+  get_url:
+    url: "{{ twistlock_console }}/api/v1/scripts/defender.ps1"
+    url_username: "{{ console_user }}"
+    url_password: "{{ console_password }}"
+    force_basic_auth: yes
+    validate_certs: no
+    dest: ./files/defender.ps1
+    # Need to overwrite if it already exists
+    force: yes
+  delegate_to: localhost
+  tags: deploy_windows_defender_powershell

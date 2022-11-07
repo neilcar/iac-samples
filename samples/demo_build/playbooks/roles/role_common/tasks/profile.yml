@@ -1,0 +1,20 @@
+- name: Add to .bashrc
+  blockinfile:
+    dest: "/home/{{ target_user }}/.bashrc"
+    block: "{{ bashrc_insert }}"
+    insertbefore: BOF
+    marker: "# {mark} ANSIBLE MANAGED BLOCK users"
+  when: bashrc_insert is defined
+
+- name: Copy profile files
+  copy:
+    src: files/profile
+    dest: "/home/{{ target_user }}/"
+  when: profile_files_copy
+
+- name: Set permissions
+  file:
+    path: "/home/{{ target_user }}/"
+    owner: "{{ target_user }}"
+    group: "{{ target_user }}"
+    recurse: yes

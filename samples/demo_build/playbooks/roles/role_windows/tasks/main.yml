@@ -1,0 +1,11 @@
+- name: Set permissions on Windows certs
+  file:
+    path: ./roles/role_windows/files/twistlock_ansible_2019
+    mode: 0600
+  delegate_to: localhost
+  tags: configure_windows
+      
+- name: Windows Server Configuration
+  import_tasks: configure_windows.yaml
+  tags: configure_windows
+  

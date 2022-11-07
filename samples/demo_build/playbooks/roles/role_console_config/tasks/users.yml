@@ -1,0 +1,25 @@
+- debug: var=users
+
+- name: Generate user array
+  set_fact:
+    user:
+      username: "{{ item.username }}"
+      password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + item.username) }}"
+  with_items: "{{ users }}"
+  register: user_array
+
+
+- debug: var=user_array.results
+
+- name: Add users
+  uri:
+    url: "{{ twistlock_console }}/api/v1/users"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: '{"username": "{{ item.ansible_facts.user.username }}", "password": "{{ item.ansible_facts.user.password  }}", "role": "admin", "authType": "basic"}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+  when: item.ansible_facts.user.username != console_user
+  with_items: "{{ user_array.results }}"

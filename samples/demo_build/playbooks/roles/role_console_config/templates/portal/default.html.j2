@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>{{ groups['console'][0] }} portal</title>
+<style>
+#users {
+    display: none;
+    }
+#vault {
+    display: none;
+    whitespace: pre-wrap;
+    }
+</style>
+</head>
+<body>
+    <h1>Portal</h1>
+    <h2>Navigation</h2>
+    <ul id="navigation">
+    {% for item in additional_dns_predicates %}
+        <li><a href="https://{{ item }}-{{ groups['k8s-master'][0] }}/" target="_blank">{{ item }}</a></li>
+    {% endfor %}
+    </ul>
+
+    <h2>Users</h2>
+    <button onclick="showUsers()">Show Users</button>
+    <div id="users">
+    <ul id="userlist">
+    {% for user in users %}
+        <li>u: {{ user.username }} / p: {{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + user.username) }}</li>
+        <ul id="groups">
+        <li>groups: {% for group in (user.groups | default('admin')) %}{{ group }} {% endfor %}
+        </ul>
+    {% endfor %}
+
+    </ul>
+    </div>
+
+    <h2>Vault</h2>
+    <button onclick="showVault()">Show Vault info</button>
+    <div id="vault">
+        {{ lookup('file', "{{ groups['console'][0] }}_vault_config.txt") }} 
+    </div>
+
+    <script>
+    function showUsers() {
+        document.getElementById("users").style.display = "block";
+        }
+    </script>
+    <script>
+    function showVault() {
+        document.getElementById("vault").style.display = "block";
+        }
+    </script>
+</body>
+</html>
+
+
+</head>
+<body>
+

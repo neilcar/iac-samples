@@ -1,0 +1,52 @@
+- setup:
+# Make sure we have the ansible_distribution var prior to installing
+
+- name: Put the Kubernetes repo in place (CentOS)
+  copy: src=./files/kubernetes.repo dest=/etc/yum.repos.d/kubernetes.repo
+  when: ansible_distribution=="CentOS"
+
+- name: Add an Apt signing key, uses whichever key is at the URL
+  apt_key:
+    url: https://packages.cloud.google.com/apt/doc/apt-key.gpg
+    state: present
+  when: ansible_distribution=="Ubuntu"   
+
+- name: Add repository
+  apt_repository:
+    repo: deb http://apt.kubernetes.io/ kubernetes-xenial main
+    state: present
+  when: ansible_distribution=="Ubuntu"   
+
+# The dpkg lock file typically exists so can't just check for its presence.
+# A "wait for lock" feature has been added to the apt module but it hasn't made
+# it to mainline yet.
+# see - https://github.com/ansible/ansible/issues/16593
+- name: Wait for apt to release the dpkg lock file
+  shell: fuser /var/lib/dpkg/lock >/dev/null 2>&1
+  register: lock_check
+  failed_when: lock_check.rc == 0
+  until: lock_check.rc == 1
+  retries: 15
+  delay: 5
+  become: true
+
+- name: Install Kubernetes
+  apt:
+    update_cache: yes
+    name: "{{ k8s_pkgs }}"
+    state: present
+    force: yes
+  retries: 3
+  delay: 10
+  register: result
+  until: result is succeeded
+
+- name: Make sure /etc/NetworkManager/conf.d exists
+  file:
+    path: /etc/NetworkManager/conf.d
+    state: directory
+
+- name: Create NetworkManager exception for calico
+  copy:
+    src: files/calico.conf
+    dest: /etc/NetworkManager/conf.d/calico.conf

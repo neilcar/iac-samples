@@ -1,0 +1,33 @@
+- name: Create collections (18.11)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/collections"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: '{"containers":["{{ item.containers }}"],"hosts":["{{ item.hosts }}"],"images":["{{ item.images }}"],"labels":["{{ item.labels }}"],"color":"{{ item.color }}","name":"{{ item.name }}","description":"{{ item.description }}"}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    status_code: 200,409
+# This should really return an error; however, it will if the collection already exists.
+# I added this as a convenience for when I'm testing repeatedly running this role.
+  with_items: 
+    - "{{ twistlock_collections }}"
+  when: twistlock_version.split('.')[0] == "18"
+
+- name: Create collections (19.03+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/collections"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+# bugbug:  Need to add options for namespaces, etc, if we want to add collections based on those attributes
+    body: '{"containers":["{{ item.containers }}"],"hosts":["{{ item.hosts }}"],"images":["{{ item.images }}"],"labels":["{{ item.labels }}"],"color":"{{ item.color }}","name":"{{ item.name }}","description":"{{ item.description }}","services":["*"],"functions":["*"],"namespaces":["*"],"raspDefenders":["*"]}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    status_code: 200,409
+# ignore 409 conflicts for re-runnability
+  with_items: 
+    - "{{ twistlock_collections }}"
+  when: twistlock_version.split('.')[0] != "18"

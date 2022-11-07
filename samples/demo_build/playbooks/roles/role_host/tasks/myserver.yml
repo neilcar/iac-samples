@@ -1,0 +1,21 @@
+- name: create a place for myserver.sh
+  file: dest="/opt/myserver" owner=root group=root mode=0755 state=directory
+
+- name: Copy my_server.sh
+  copy:
+    src: "{{ role_path }}/files/my_server.sh"
+    dest: /opt/myserver/my_server.sh
+    mode: 0755
+
+- name: copy my_server services
+  template:
+    src: my_server.service.j2
+    dest: /etc/systemd/system/my_server_{{ item.num }}.service
+  with_items: "{{ my_server_ports }}"
+
+- name: Start Host Server Service
+  service:
+    name: my_server_{{ item.num }}.service
+    state: started
+    enabled: true
+  with_items: "{{ my_server_ports }}"

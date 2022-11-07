@@ -1,0 +1,34 @@
+# Need this to use the Ansible docker_* modules...
+- name: Install python
+  apt: name={{ item }} state=latest
+  with_items:
+      - python-pip
+      - python-dev
+      - python-setuptools
+      - jq
+
+# It would be nice to use Ansible native commands here...
+# ...or even to use pip to manage this.
+# Unfortunately, Docker have made it difficult.
+- name: Install docker-compose
+  #command: curl -L https://github.com/docker/compose/releases/download/1.17.0/docker-compose-{{ ansible_system }}-{{ ansible_architecture }} -o /usr/local/bin/docker-compose
+  get_url: 
+    url : https://github.com/docker/compose/releases/download/1.17.0/docker-compose-{{ ansible_system }}-{{ ansible_userspace_architecture }}
+    dest: /usr/local/bin/docker-compose
+    mode: 'u+x,g+x'
+
+- name: Set docker-compose +x
+  file: 
+    path: /usr/local/bin/docker-compose
+    mode: 0755
+
+- name: Get docker-py modules (regular user)
+  pip:
+    name: docker, docker-compose, boto3
+    state: forcereinstall
+  with_items:
+    - root
+    - "{{ target_user }}"
+  become: true
+  become_user: "{{ item }}"
+

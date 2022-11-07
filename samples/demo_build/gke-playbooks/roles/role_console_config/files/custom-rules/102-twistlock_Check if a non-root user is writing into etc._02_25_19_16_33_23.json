@@ -1,0 +1,1 @@
+{"name":"Check if a non-root user is writing into etc.","_id":102,"type":"filesystem","script":"proc.user != \"root\" and file.dir = \"/etc\"","description":"Checks if a process is writing into the filesystem directory of /etc","message":"%proc.name wrote to file %file.path","policyType":"customRuntimeRules"}

@@ -1,0 +1,1 @@
+{"name":"File permission","previousName":"","title":"File permission must be correct","script":"if [ $(stat -c %a /bin/busybox) -eq 755 ]; then\n     echo 'test permission failure' && exit 1;\nfi","severity":"low"}

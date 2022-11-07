@@ -1,0 +1,1 @@
+{"name":"User batman","previousName":"","title":"User batman must exist!","script":"if grep -Fxq \"batman\" /etc/passwd\nthen\n    echo yes\nelse\n    echo \"user not found!\"\n    exit 1\nfi","severity":"critical"}

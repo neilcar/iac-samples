@@ -1,0 +1,11 @@
+- name: Configure console Defender as registry & serverless scanner, unix socket
+  uri:
+    url: https://localhost:8083/api/v1/defenders/{{ ansible_fqdn }}/features
+    method: POST
+    user: "{{ users[0].username }}"
+    password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    body: '{"registryScanner":true,"serverlessScanner":true,"proxyListenerType":"tcp","proxyTargetType":"docker"}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+

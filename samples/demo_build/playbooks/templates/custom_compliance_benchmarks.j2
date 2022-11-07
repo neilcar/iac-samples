@@ -1,0 +1,5 @@
+custom_compliance_benchmarks:
+  - name: Hosts file exists (Linux)
+    title: Check that /etc/hosts exists (Linux)
+    script: 'if [ ! -f /etc/hosts ]; then\n    echo \"File not found!\"\n    exit 1\nfi'
+    severity: medium

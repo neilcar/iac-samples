@@ -1,0 +1,77 @@
+- name: Git Clone of the Istio helm chart
+  command: git clone --branch 1.2.2 https://github.com/istio/istio.git
+
+#- name: Git Clone of the Istio repo
+#  command: git clone https://github.com/automatecloud/istio_install.git
+
+#- name: Install Istio Helm Chart Repo
+#  command: helm repo add istio.io https://storage.googleapis.com/istio-release/releases/1.2.2/charts/
+#  environment:
+#    KUBECONFIG: /etc/kubernetes/admin.conf
+#    register: result
+#    retries: 5
+#    delay: 20
+#    until: result is succeeded
+#
+#- name: Update Helm Repo Charts
+#  command: helm repo update
+#  environment:
+#    KUBECONFIG: /etc/kubernetes/admin.conf
+#    register: result
+#    retries: 5
+#    delay: 20
+#    until: result is succeeded
+
+
+
+- name: Wait for tiller deployment become available
+  shell: "kubectl wait --namespace=kube-system --for=condition=available deployment/tiller-deploy --timeout=600s"
+  register: tiller_deployment_ready
+
+- debug: var=tiller_deployment_ready.stdout_lines
+
+- name: Wait for some seconds to make sure tiller is up and running
+  pause: seconds=60
+
+# - name: Install Istio
+#   command: helm install istio_install/istio --name istio --namespace istio-system
+#   environment:
+#     KUBECONFIG: /etc/kubernetes/admin.conf
+#     register: result
+#     retries: 5
+#     delay: 20
+#     until: result is succeeded
+
+- name: Install Istio CRDs
+  command: helm install istio/install/kubernetes/helm/istio-init --name istio-init --namespace istio-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+    register: result
+    retries: 5
+    delay: 20
+    until: result is succeeded
+
+- name: Wait for some seconds to make sure tiller is up and running
+  pause: seconds=60
+
+- name: Install Istio
+  command: helm install istio/install/kubernetes/helm/istio --name istio --namespace istio-system
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+    register: result
+    retries: 5
+    delay: 20
+    until: result is succeeded
+
+
+
+
+- name: Enable Istio Automatic Sidecar Intection
+  command: kubectl label namespace bookinfo istio-injection=enabled
+  environment:
+    KUBECONFIG: /etc/kubernetes/admin.conf
+
+#- name: Install the bookstore demo application with manual sidecare injection via script
+#  script: install_istio.sh
+#  environment:
+#    KUBECONFIG: /etc/kubernetes/admin.conf

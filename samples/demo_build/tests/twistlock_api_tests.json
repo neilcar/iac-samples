@@ -1,0 +1,224 @@
+{
+	"info": {
+		"_postman_id": "3f16503d-fa70-42da-8fe3-e3740a35d758",
+		"name": "Twistlock Tests",
+		"description": "Demo environment testing",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Ping Console",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "87d7010b-9369-4d4e-81e9-bb76c80d3e2a",
+						"exec": [
+							"pm.test(\"Check that console is live\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"OK\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{consoleaddr}}/api/v1/_ping",
+					"protocol": "https",
+					"host": [
+						"{{consoleaddr}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"_ping"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Check Defenders",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "c5f7d718-6c26-42bb-adc8-f48f785bfbe0",
+						"exec": [
+							"pm.test(\"Check that there are 3 container defenders\", () => {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData[0].connected).to.eql(3);",
+							"});",
+							"pm.test(\"Check that there is 1 serverless defenders\", () => {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData[2].connected).to.eql(1);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"auth": {
+					"type": "basic",
+					"basic": [
+						{
+							"key": "password",
+							"value": "{{password}}",
+							"type": "string"
+						},
+						{
+							"key": "username",
+							"value": "{{username}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "https://{{consoleaddr}}/api/v1/defenders/summary",
+					"protocol": "https",
+					"host": [
+						"{{consoleaddr}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"defenders",
+						"summary"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "CNAF alert exists for DVWA",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "32e92af0-22e8-494e-ac91-dc043d445b46",
+						"exec": [
+							"pm.test(\"Check that DVWA CNAF audit exists\", () => {",
+							"    var jsonData = pm.response.json();",
+							"    pm.expect(jsonData[0].imageName).to.eql(\"infoslack/dvwa:latest\");",
+							"});"
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://{{consoleaddr}}/api/v1/audits/firewall/app/container?search=dvwa",
+					"protocol": "https",
+					"host": [
+						"{{consoleaddr}}"
+					],
+					"path": [
+						"api",
+						"v1",
+						"audits",
+						"firewall",
+						"app",
+						"container"
+					],
+					"query": [
+						{
+							"key": "search",
+							"value": "dvwa"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"auth": {
+		"type": "basic",
+		"basic": [
+			{
+				"key": "password",
+				"value": "{{password}}",
+				"type": "string"
+			},
+			{
+				"key": "username",
+				"value": "{{username}}",
+				"type": "string"
+			}
+		]
+	},
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"id": "64603278-1b44-435e-9377-57066549337f",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"id": "69398dda-c3d0-4fa2-8dd5-fb25c338e47c",
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}

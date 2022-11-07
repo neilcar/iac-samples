@@ -1,0 +1,8 @@
+{
+    "insecure-registries" : [ "registry.infra.svc.cluster.local:5000" ],
+    "log-driver": "splunk",
+    "log-opts": {
+        "splunk-token": "{{ splunk_token }}",
+        "splunk-url": "https://splunkevt-{{ groups['k8s-master'][0] }}"
+    }
+}

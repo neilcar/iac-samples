@@ -1,0 +1,48 @@
+- hosts: localhost
+# upgrade group_vars/all.yml if necessary
+  gather_facts: yes
+  any_errors_fatal: true
+  tasks:
+  # check private key exists
+  - stat: 
+      path: "{{ ansible_ssh_private_key_file }}"
+    register: ssh_key
+  - debug: 
+      msg: "SSH private key {{ ansible_ssh_private_key_file }} does not exist, check .ansible.cfg."
+    when: ssh_key.stat.exists == false
+  # check GCP config 
+  - stat:
+      path: "{{ credentials_file }}"
+    register: gcp_creds
+  - shell: cat {{ credentials_file }}
+    register: creds_output
+  - debug: 
+      msg: "GCP config file {{ credentials_file }} does not exist, check group_vars/all.yml."
+    when: gcp_creds.stat.exists == false
+  - debug:
+      msg: "Configured account {{ service_account_email }} doesn't match account in {{ credentials_file }}"
+    when: service_account_email != (creds_output.stdout | from_json).client_email
+  # ensure only one console & k8s-master
+  - debug:
+      msg: "Only one console: supported"
+    when: groups['console'] | length > 1
+  - debug:
+      msg: "Only one k8s-master: supported"
+    when: groups['k8s-master'] | length > 1
+  # ensure console & k8s-master are the same 
+  - debug:
+      msg: "console: and k8s-master: must have the same hostname"
+    when: groups['console'][0] != groups['k8s-master'][0]
+  # check domain_root
+  - debug:
+      msg: "Host {{ item }} not in {{ domain_root }}"
+    when: item is not search(domain_root)
+    with_inventory_hostnames:
+      - all
+  # check license & token 
+  - debug:
+      msg: "twistlock_registry_token not in group_vars/all.yml"
+    when: twistlock_registry_token is undefined
+  - debug:
+      msg: "twistlock_license not in group_vars/all.yml"
+    when: twistlock_license is undefined

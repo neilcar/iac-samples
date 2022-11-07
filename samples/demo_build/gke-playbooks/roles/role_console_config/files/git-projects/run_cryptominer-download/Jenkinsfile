@@ -1,0 +1,6 @@
+node {
+
+    docker.image('servethehome/monero_cpu_minergate').withRun('-e "username=thisis@alie.com" -e "xmrpool=127.0.0.1"') { c ->
+        sh 'sleep 60'
+    }
+}

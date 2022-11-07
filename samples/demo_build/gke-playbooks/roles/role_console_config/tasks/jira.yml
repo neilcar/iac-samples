@@ -1,0 +1,14 @@
+- name: Create /opt/jira
+  file:
+    path: /opt/jira
+    state: directory
+
+- name: Template Jira config
+  template:
+    src: "{{ item }}"
+    dest: /opt/jira/{{ item | basename | regex_replace('\.j2','') }}
+  with_fileglob:
+    - ../templates/jira/*.j2
+
+- name: Deploy Jira
+  shell: 'kubectl apply -f /opt/jira/'

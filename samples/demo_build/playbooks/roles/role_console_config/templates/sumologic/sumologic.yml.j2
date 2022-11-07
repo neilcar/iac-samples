@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sumologic
+  namespace: infra
+  labels:
+    apps: sumo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: sumo
+  template:
+    metadata:
+      labels:
+        app: sumo
+    spec:
+      containers:
+        - name: sumologic
+          image: sumologic/collector:latest-syslog
+          ports:
+            - name: sumosyslog
+              containerPort: 514
+              hostPort: 2514
+          env:
+          - name: SUMO_ACCESS_ID
+            value: "{{ sumo_access_id }}"
+          - name: SUMO_ACCESS_KEY
+            value: "{{ sumo_access_key }}"
+          - name: SUMO_CLOBBER
+            value: "true"   
+          - name: SUMO_COLLECTOR_NAME
+            value:  "{{ groups['console'][0] }}"
+

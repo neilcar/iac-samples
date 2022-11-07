@@ -1,0 +1,71 @@
+#!groovy
+ 
+import jenkins.model.*
+import hudson.security.*
+import jenkins.security.s2m.AdminWhitelistRule
+import hudson.security.csrf.DefaultCrumbIssuer
+import jenkins.model.Jenkins
+import jenkins.model.Jenkins
+import jenkins.security.s2m.*
+import org.jenkinsci.main.modules.sshd.SSHD
+
+Jenkins jenkins = Jenkins.getInstance()
+def user
+def keys_param
+
+// Increase executors
+jenkins.setNumExecutors(3)
+
+// Set Jenkins URL
+
+def location = Jenkins.instance.getDescriptor('jenkins.model.JenkinsLocationConfiguration')
+location.setUrl("{{ lookup('jenkins',groups['console'][0], k8s=twistlock_console_k8s) }}")
+
+
+// Create admin accounts
+def hudsonRealm = new HudsonPrivateSecurityRealm(false)
+{% for user in users %}
+hudsonRealm.createAccount("{{ user.username }}", "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + user.username) }}")
+user=hudson.model.User.get("{{ user.username }}")
+keys_param = new org.jenkinsci.main.modules.cli.auth.ssh.UserPropertyImpl("{{ lookup('file', '{{ ansible_ssh_private_key_file }}.pub') | replace('\n', '') | replace('\r', '') }}")
+user.addProperty(keys_param)
+{% endfor %}
+jenkins.setSecurityRealm(hudsonRealm)
+ 
+def strategy = new ProjectMatrixAuthorizationStrategy()
+strategy.add(jenkins.ADMINISTER, "authenticated")
+jenkins.setAuthorizationStrategy(strategy)
+jenkins.save()
+ 
+// Set CSRF protection
+Jenkins.instance.getInjector().getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false)
+
+jenkins.setCrumbIssuer(new DefaultCrumbIssuer(true))
+jenkins.save()
+
+// Disable remoting
+jenkins.getDescriptor("jenkins.CLI").get().setEnabled(true)
+
+// Enable Agent to master security subsystem
+jenkins.injector.getInstance(AdminWhitelistRule.class).setMasterKillSwitch(false);
+
+// Disable jnlp
+jenkins.setSlaveAgentPort(-1);
+
+// Disable old Non-Encrypted protocols
+HashSet<String> newProtocols = new HashSet<>(jenkins.getAgentProtocols());
+newProtocols.removeAll(Arrays.asList(
+        "JNLP3-connect", "JNLP2-connect", "JNLP-connect", "CLI-connect", "CLI2-connect"
+));
+jenkins.setAgentProtocols(newProtocols);
+jenkins.save()
+
+// Configure SSHD
+
+SSHD.get().setPort(8022)
+
+
+// Copy twistlock plugin & config
+
+new File('/var/jenkins_home/plugins/twistlock-jenkins-plugin.jpi') << new File('/tmp/twistlock-jenkins-plugin.hpi').bytes
+new File('/var/jenkins_home/org.jenkinsci.plugins.twistlock.builder.BuildScanner.xml') << new File('/tmp/org.jenkinsci.plugins.twistlock.builder.BuildScanner.xml').bytes

@@ -1,0 +1,5 @@
+- name: Make sure nmap is installed
+  apt: name=nmap state=latest
+
+- name: nmap it
+  shell: nmap -v -sP 172.17.0.1

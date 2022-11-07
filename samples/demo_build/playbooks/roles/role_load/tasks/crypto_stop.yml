@@ -1,0 +1,4 @@
+- name: Stop minergate
+  docker_container:
+    name: minergate
+    state: stopped

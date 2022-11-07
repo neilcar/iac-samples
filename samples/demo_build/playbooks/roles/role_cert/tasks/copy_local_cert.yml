@@ -1,0 +1,19 @@
+- name: Create target directory for certs
+  file:
+    dest: /etc/letsencrypt/live/{{ domain_root }}/
+    state: directory
+
+- name: Copy private key to target
+  copy:
+    src: files/wildcard_cert/{{ domain_root }}/privkey.pem
+    dest: /etc/letsencrypt/live/{{ domain_root }}/privkey.pem
+
+- name: Copy public key to target
+  copy:
+    src: files/wildcard_cert/{{ domain_root }}/cert.pem
+    dest: /etc/letsencrypt/live/{{ domain_root }}/cert.pem
+
+- name: Copy chain.pem to target
+  copy:
+    src: files/wildcard_cert/{{ domain_root }}/chain.pem
+    dest: /etc/letsencrypt/live/{{ domain_root }}/chain.pem

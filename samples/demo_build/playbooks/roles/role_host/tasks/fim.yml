@@ -1,0 +1,19 @@
+# Host Task
+# This task will:
+#   1) Create alerts for FIM (File Integrity Monitoring)
+
+
+- name: Copy the FIM application configuration file
+  tags: 
+    - host_defense
+  copy:
+    src: files/application.cfg
+    dest: /tmp/application.cfg
+
+- name: Read application.cfg
+  tags: host_defense
+  shell: cat /tmp/application.cfg
+
+- name: Write application.cfg
+  tags: host_defense
+  shell: echo "Modified Configuration" > /tmp/application.cfg

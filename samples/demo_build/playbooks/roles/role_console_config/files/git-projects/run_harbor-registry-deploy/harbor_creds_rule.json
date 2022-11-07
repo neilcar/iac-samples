@@ -1,0 +1,10 @@
+{
+    "secret": {
+        "plain": "Harbor12345"
+    },
+    "serviceAccount": {},
+    "apiToken": {},
+    "type": "basic",
+    "_id": "Harbor Registry",
+    "accountID": "admin"
+}

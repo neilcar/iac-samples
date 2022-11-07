@@ -1,0 +1,5 @@
+FROM cdue/webconsole
+
+EXPOSE 80
+
+ENTRYPOINT ["apache2-foreground"]

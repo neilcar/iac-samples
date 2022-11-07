@@ -1,0 +1,7 @@
+- hosts: localhost
+  gather_facts: no
+  any_errors_fatal: true
+  tasks:
+
+  - debug: msg="{{ lookup('shorthostname', 'demo.neil.lab.twistlock.com')}}"
+

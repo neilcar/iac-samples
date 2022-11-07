@@ -1,0 +1,160 @@
+- name: create a place for the twistlock installation to live
+  file: dest="{{ ansible_user_dir }}/twistlock" owner=root group=root mode=0755 state=directory
+
+- name: create a place for jenkins
+  file: dest="/opt/jenkins" owner=root group=root mode=0755 state=directory
+
+- name: Get latest Twistlock release URL
+  set_fact:
+    twistlock_release_url: "{{(lookup('twistlock_url', twistlock_registry_token) | from_json).cdn}}"
+  when: twistlock_release_url is not defined and not twistlock_direct_image_install
+
+- name: twistlock_prerelease_version --> twistlock_install_version
+  set_fact:
+    twistlock_install_version: "{{ twistlock_prerelease_version }}"
+  when: twistlock_install_version is not defined and twistlock_prerelease_version is defined
+
+- name: Get latest Twistlock release version
+  set_fact:
+    twistlock_install_version: "{{(lookup('twistlock_url', twistlock_registry_token) | from_json).version | replace('.','_') }}"
+  when: twistlock_install_version == 'latest' or twistlock_install_version is not defined
+
+- name: copy over the release tarball from CDN
+  unarchive: src="{{ twistlock_release_url }}" dest="{{ ansible_user_dir }}/twistlock" creates="{{ ansible_user_dir }}/twistlock/version.txt" remote_src=True
+  when: not twistlock_direct_image_install
+
+- name: Remove twistlock_data (if it already exists)
+  shell: "docker stop twistlock_data && docker rm twistlock_data"
+  when: twistlock_direct_image_install
+  ignore_errors: true
+
+- name: Create twistlock_data container to extract twistcli
+  shell: "docker create --name twistlock_data -ti  --entrypoint=/bin/sh registry-auth.twistlock.com/tw_{{ twistlock_registry_token | lower }}/twistlock/console:console_{{ twistlock_install_version }}"
+  when: twistlock_direct_image_install
+  
+- name: create a place for the twistcli
+  file: dest="{{ ansible_user_dir }}/twistlock/linux" owner=root group=root mode=0755 state=directory
+  when: twistlock_direct_image_install
+  ignore_errors: true
+
+- name: Ensure unzip is present
+  apt: name=unzip state=latest
+
+- name: Extract twistcli from twistlock_data (19.06+)
+  shell: "docker cp twistlock_data:/data/linux/twistcli-linux.zip /root/twistlock/linux/twistcli-linux.zip"
+  when: twistlock_direct_image_install
+  ignore_errors: true
+
+- name: Extract twistcli-linux.zip (19.06+)
+  unarchive:
+    src: /root/twistlock/linux/twistcli-linux.zip
+    dest: /root/twistlock/linux/
+    remote_src: yes
+  ignore_errors: true
+
+- name: Extract twistcli from twistlock_data (<19.06)
+  shell: "docker cp twistlock_data:/data/linux/twistcli /root/twistlock/linux/twistcli"
+  when: twistlock_direct_image_install
+  ignore_errors: true
+
+- name: Extract twistlock.cfg from twistlock_data
+  shell: "docker cp twistlock_data:/var/lib/twistlock/scripts/twistlock.cfg /root/twistlock/twistlock.cfg"
+  when: twistlock_direct_image_install
+
+- name: Extract twistlock-jenkins-plugin.hpi from twistlock_data
+  shell: "docker cp twistlock_data:/data/twistlock-jenkins-plugin.hpi /root/twistlock/twistlock-jenkins-plugin.hpi"
+  when: twistlock_direct_image_install
+
+- name: Remove twistlock_data
+  shell: "docker rm twistlock_data"
+  when: twistlock_direct_image_install
+
+- name: Enable OpenSCAP
+  lineinfile:
+    path: "{{ ansible_user_dir }}/twistlock/twistlock.cfg"
+    regexp: '^SCAP_ENABLED='
+    line: 'SCAP_ENABLED=true'
+
+- name: Create console yaml
+  command: "linux/twistcli console export kubernetes --service-type NodePort --storage-class slow --registry-token {{ twistlock_registry_token }} --node-labels kubernetes.io/hostname:{{ ansible_hostname }}"
+  args:
+    chdir: /root/twistlock
+
+- name: Set console hostPort
+  lineinfile:
+    path: /root/twistlock/twistlock_console.yaml
+    insertafter: 'containerPort: 8084'
+    line: '          hostPort: 8084'
+  tags: external_defender
+  
+- name: Copy twistlock_console yaml
+  copy:
+    src: /root/twistlock/twistlock_console.yaml
+    dest: /opt/twistlock_console.yaml
+    remote_src: yes
+  tags: external_defender
+
+- name: Apply console yaml
+  command: kubectl apply -f /root/twistlock/twistlock_console.yaml
+  tags: external_defender
+
+- name: Get twistlock-console pod
+  shell: kubectl get pods -n twistlock -l name=twistlock-console -o name
+  register: console_pod
+  tags: external_defender
+
+# - name: Delete Twistlock-Console pod to restart
+#   command: kubectl delete {{ console_pod.stdout }} -n twistlock
+#   tags: external_defender
+
+
+- name: we need to wait for it all to start up...
+  uri:
+    url: "{{ twistlock_console }}/api/v1/_ping"
+    status_code: 200
+    validate_certs: no
+  register: result
+  until: ('status' in result) and (result.status == 200)
+  retries: 50
+  delay: 10 
+
+- name: Create admin user
+  uri:
+      url: "{{ twistlock_console }}/api/v1/signup"
+      method: POST
+      body: '{"username":"{{ console_user }}", "password":"{{ console_password }}"}'
+      force_basic_auth: no
+      body_format: json
+      validate_certs: no
+      status_code: 200,400
+        # We are ignoring errors here in case this task is being run again & user already exists
+
+
+- name: Let's put our license in place (from variable)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/settings/license"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: "{{ lookup('template','license_file.json.j2') }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    status_code: 200,400
+  when: twistlock_license is defined
+
+- name: Let's put our license in place (from file)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/settings/license"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: "{{ lookup('file','license_file.json') }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+    status_code: 200,400
+  when: twistlock_license is not defined
+        # We are ignoring errors here as if the license is already there then this can error
+
+

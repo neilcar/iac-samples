@@ -1,0 +1,6 @@
+- name: "Console"
+  import_tasks: console.yml
+  tags: external_defender
+
+
+

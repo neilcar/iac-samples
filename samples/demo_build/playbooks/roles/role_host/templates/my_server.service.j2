@@ -1,0 +1,13 @@
+[Unit]
+Description=My Server
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/myserver
+ExecStart=/opt/myserver/my_server.sh {{ item.port }} --option=123
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target

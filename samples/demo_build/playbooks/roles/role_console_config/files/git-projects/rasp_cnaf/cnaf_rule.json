@@ -1,0 +1,60 @@
+{
+    "_id": "raspAppFirewall",
+    "rules": [
+        {
+            "effect": "alert",
+            "blacklist": {
+                "advancedProtection": true,
+                "subnets": []
+            },
+            "whitelistSubnets": [],
+            "libinject": {
+                "xssEnabled": true,
+                "sqliEnabled": true
+            },
+            "headers": {
+                "specs": []
+            },
+            "resources": {
+                "containers": [],
+                "images": [],
+                "hosts": [],
+                "labels": [],
+                "appIDs": [
+                    "rasp-cnaf:*"
+                ]
+            },
+            "csrfEnabled": true,
+            "clickjackingEnabled": true,
+            "attackToolsEnabled": true,
+            "intelGathering": {
+                "bruteforceEnabled": true,
+                "dirTraversalEnabled": true,
+                "trackErrorsEnabled": true,
+                "infoLeakageEnabled": true,
+                "removeFingerprintsEnabled": true
+            },
+            "shellshockEnabled": true,
+            "malformedReqEnabled": true,
+            "maliciousUpload": {
+                "enabled": true,
+                "allowedFileTypes": [
+                    "gif",
+                    "jpeg"
+                ],
+                "allowedExtensions": []
+            },
+            "whitelistURLs": [],
+            "portMaps": [
+                {
+                    "exposed": 8888, 
+                    "internal": 80
+                }
+            ],
+            "certificate": {},
+            "name": "RASP-CNAF Test Project"
+        }
+    ],
+    "minPort": 30000,
+    "maxPort": 31000
+}

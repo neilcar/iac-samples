@@ -1,0 +1,76 @@
+- delegate_to: "{{ groups['console'][0] }}"
+  name: Gather facts from console
+  setup:
+  tags: always
+
+- delegate_to: "{{ groups['console'][0] }}"
+  debug: var=ansible_default_ipv4
+  register: console_ip
+  tags: always
+
+- delegate_to: "{{ groups['console'][0] }}"
+  debug: var=ansible_hostname
+  register: console_hostname
+  tags: always
+
+- name: Set k8s target addr
+  set_fact: target_addr="{{ console_ip.ansible_default_ipv4.address }}"
+  tags: always
+
+# - import_tasks: SockShop-install.yml
+#   tags:
+#     - sockshop
+#     - sockshop:install
+#   delegate_to: "{{ groups['console'][0] }}"
+
+# - import_tasks: php-demo.yml
+- import_tasks: Selenium.yaml
+  tags:
+    - dvwa
+    - sockshop
+    - sockshop:test
+
+
+
+# Start cryptominer at the head of this, stop it at the end to prevent it from continuing to consume CPU
+# - import_tasks: crypto_start.yml
+#   delegate_to: "{{ groups['console'][0] }}"
+#   tags:
+#     - cryptominer
+#     - exploit
+
+# - import_tasks: crypto_stop.yml
+#   delegate_to: "{{ groups['console'][0] }}"
+#   tags:
+#     - cryptominer
+#     - exploit
+
+- name: Force container scan
+  uri:
+    url: "{{ twistlock_console }}/api/v1/containers/scan"
+    method: POST
+    user: "{{ users[0].username }}"
+    password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + users[0].username) }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+
+# - import_tasks: malware.yml
+#   delegate_to: "{{ groups['console'][0] }}"
+
+- import_tasks: jenkins_run.yml
+  delegate_to: localhost
+# - import_tasks: struts2_exploit.yml
+#   tags:
+#     - struts2
+#     - struts2:exploit
+#     - exploit
+- import_tasks: cnaf_dvwa.yml
+  tags:
+    - dvwa
+    - exploit
+# - import_tasks: SockShop.yaml
+#   tags:
+#     - sockshop
+#     - sockshop:test
+# - import_tasks: post-install-console-config.yml

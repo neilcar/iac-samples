@@ -1,0 +1,6 @@
+<com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>
+  <scope>GLOBAL</scope>
+  <id>twistlock_creds</id>
+  <username>{{ user_array.results[0].ansible_facts.user.username }}</username>
+  <password>{{ user_array.results[0].ansible_facts.user.password }}</password>
+</com.cloudbees.plugins.credentials.impl.UsernamePasswordCredentialsImpl>

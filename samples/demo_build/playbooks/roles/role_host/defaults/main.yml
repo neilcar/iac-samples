@@ -1,0 +1,4 @@
+my_server_ports:
+  - { num: 1, port: 8000 }
+  - { num: 2, port: 8001 }
+  - { num: 3, port: 8002 }

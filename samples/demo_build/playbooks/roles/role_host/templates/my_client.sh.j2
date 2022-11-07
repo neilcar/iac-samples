@@ -1,0 +1,10 @@
+#!/bin/bash
+
+sleep 10 # Until issue 12853 is fixed
+while :
+do
+{% for item in my_server_ports  %}
+        wget -O/dev/null -q {{ hostvars[groups['k8s-master'][0]]['ansible_hostname'] }}:{{ item.port }}
+	sleep 2
+{% endfor %}
+done

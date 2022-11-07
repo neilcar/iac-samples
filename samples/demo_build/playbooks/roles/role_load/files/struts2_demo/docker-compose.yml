@@ -1,0 +1,25 @@
+version: '2'
+services:
+  attackerclient:
+    image: neilcar/attacker_client
+    container_name: attackerclient
+    extra_hosts:
+      - "strutsserver:172.18.0.3"
+    dns:
+      - 8.8.8.8
+    labels:
+      com.demo.incident: "struts2"
+
+
+  strutsserver:
+    image: neilcar/struts2_demo
+    container_name: strutsserver
+    labels:
+      com.demo.incident: "struts2"
+    extra_hosts:
+      - "attackerclient:172.18.0.2"
+    dns:
+      - 8.8.8.8
+    expose:
+      - "8080"
+

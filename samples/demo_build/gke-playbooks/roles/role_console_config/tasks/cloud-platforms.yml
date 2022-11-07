@@ -1,0 +1,35 @@
+- name: Add Azure credentials (19.03+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/credentials"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: yes
+    body: "{{ lookup('file','cloud-platforms/azure.json' ) }}"
+  when: twistlock_version.split('.')[0] != "18"
+
+- name: Add GCP credentials (19.03+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/credentials"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: yes
+    body: "{{ lookup('file','cloud-platforms/gcp.json' ) }}"
+  when: twistlock_version.split('.')[0] != "18"
+
+- name: Enabling Cloud Discovery and Compliance (19.03+)
+  uri:
+    url: "{{ twistlock_console }}/api/v1/policies/cloud-platforms"
+    method: PUT
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: yes
+    body: '{"name":"", "_id":"cloud", "rules":[{"credentialId":"AWS","awsRegionType":"regular", "serverlessRadarEnabled":true, "discoveryEnabled":true,"complianceEnabled":true,"complianceCheckIDs":[100001,100022,100014,100029,100011,100035,100018,100021,100016,100037,100013,100015,100036,100031,100028,100012,100038,100003,100039,100032,100002,100019,100030,100006,100010,100007,100024,100023,100009,100040,100017,100034,100020,100027,100004,100005,100033,100008,100025]},{"credentialId":"GCP","awsRegionType":"","discoveryEnabled":true,"complianceEnabled":false},{"credentialId":"Azure","awsRegionType":"","discoveryEnabled":true,"complianceEnabled":false}]}'
+  when: twistlock_version.split('.')[0] != "18"

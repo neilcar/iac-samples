@@ -1,0 +1,90 @@
+{
+    "specifications": [
+        {
+            "registry": "",
+            "repository": "library/httpd",
+            "tag": "latest",
+            "cap": 5,
+            "os": "linux",
+            "hostname": "",
+            "namespace": "",
+            "useAWSRole": false,
+            "version": "2",
+            "credential": {
+                "_id": "",
+                "type": "",
+                "accountID": "",
+                "accountGUID": "",
+                "secret": {
+                    "encrypted": ""
+                },
+                "apiToken": {
+                    "encrypted": ""
+                }
+            },
+            "roleArn": "",
+            "index": 3,
+            "scanners": 2
+        },
+        {
+            "registry": "registry.infra.svc.cluster.local:5000",
+            "repository": "",
+            "tag": "",
+            "cap": 5,
+            "isNew": true,
+            "os": "linux",
+            "hostname": "",
+            "namespace": "",
+            "useAWSRole": false,
+            "version": "2",
+            "credential": {
+                "_id": "",
+                "type": "",
+                "accountID": "",
+                "accountGUID": "",
+                "secret": {
+                    "encrypted": ""
+                },
+                "apiToken": {
+                    "encrypted": ""
+                }
+            },
+            "roleArn": "",
+            "index": 0,
+            "scanners": 2
+        },
+        {
+            "registry": "{{ artifactory_url }}",
+            "repository": "",
+            "tag": "",
+            "cap": 5,
+            "isNew": true,
+            "os": "linux",
+            "hostname": "",
+            "namespace": "",
+            "useAWSRole": false,
+            "version": "jfrog",
+            "credential": {
+                "_id": "Artifactory"
+            },
+            "roleArn": "",
+            "index": 1,
+            "scanners": 2
+        },
+        {
+            "version": "aws",
+            "registry": "{{ aws_registry_url }}",
+            "credential": {
+                "_id": "AWS"
+            },
+            "useAWSRole": false,
+            "os": "linux",
+            "cap": 5,
+            "isNew": true,
+            "hostname": "",
+            "index": 2,
+            "scanners": 2
+        }
+    ],
+    "webhookUrlSuffix": "PBMNNaHQxxUoMSFf8-9AcsieoRk="
+}'

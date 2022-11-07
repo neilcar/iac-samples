@@ -1,0 +1,22 @@
+- name: Get host name
+  set_fact: target_host={{ ansible_host }}
+
+- name: Pause instance {{ target_host }}
+  gce: 
+    instance_names: "{{ target_host | replace('.', '-') | replace('twistlock.com', '') }}" 
+    external_ip: "{{ target_host | replace('.', '-') | replace('twistlock.com', '') }}"
+    machine_type: "{{ machine_type }}"
+    image: "{{ image | default( lookup('build_defaults','image') ) }}"
+    service_account_email: "{{ service_account_email }}"
+    credentials_file: "{{ credentials_file }}"
+    project_id: "{{ project_id | default( lookup('build_defaults','project_id') )  }}"
+    disk_size: "{{ disksize }}"
+    state: stopped   
+  tags:
+  - pause
+  delegate_to: localhost
+  ignore_errors: true
+  register: result
+  retries: 2
+  delay: 10
+  until: result is succeeded

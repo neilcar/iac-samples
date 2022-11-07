@@ -1,0 +1,95 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: jira-app
+  namespace: infra
+  labels:
+    app: jira-app
+spec:
+  ports:
+  - name: http
+    protocol: TCP
+    port: 8080
+    targetPort: 8080
+  selector:
+    app: jira-app
+  type: NodePort
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  labels:
+    app: jira-app
+  name: jira-app
+  namespace: infra
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: jira-app
+  serviceName: jira-app
+  template:
+    metadata:
+      labels:
+        app: jira-app
+    spec:
+      containers:
+      - image: {{ jira_img }}
+        imagePullPolicy: IfNotPresent
+        name: jira-app
+        volumeMounts:
+        - mountPath: "/opt/jira/data"
+          name: persistentdata
+        - mountPath: "/opt/jira/config/jira.config"
+          name: config-volume
+          subPath: jira.config
+        ports:
+          - containerPort: 8080
+            name: web
+            protocol: TCP
+      imagePullSecrets:
+        - name: demo-build-registry
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: persistentdata
+          persistentVolumeClaim:
+            claimName: jira-home-pvc
+        - name: config-volume
+          configMap:
+            name: jira-config
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: jira-home-pvc
+  namespace: infra
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+---
+apiVersion: v1
+data:
+  jira.config: |
+    jira {
+        disarm true
+        minimumMemory "768m"
+        maximumMemory "768m"
+        database {
+            user "atlassian"
+            password "atlassian"
+            host "jira-db.infra.svc.cluster.local"
+            name "jira"
+            type "postgres72"
+            schema "public"
+        }
+        baseUrl "https://jira.intranet.local"
+    }
+kind: ConfigMap
+metadata:
+  name: jira-config
+  namespace: infra

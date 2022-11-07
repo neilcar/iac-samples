@@ -1,0 +1,36 @@
+#- name: create SSH directory for the twistlock_ansible_2019 ssh keys
+#  file: dest="{{ ansible_user_dir }}/twistlock/ssh" owner=root group=root mode=0400 state=directory
+#  tags: configure_windows
+
+#- name: Get host name
+  # set_fact: target_host={{ ansible_host }}
+#  tags: configure_windows
+
+- name: Generate user array
+  set_fact:
+    user:
+      username: "{{ item.username }}"
+      password: "{{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + item.username) }}"
+  with_items: "{{ users }}"
+  register: user_array
+  tags: configure_windows
+
+- name: Delete users in case they already exist
+  shell: "ssh -o StrictHostKeyChecking=no -i ./roles/role_windows/files/twistlock_ansible_2019 twistlock@{{ groups['windows'][0]}} net user /delete {{ item.ansible_facts.user.username }} /y"
+  delegate_to: localhost
+  with_items: "{{ user_array.results }}"
+  ignore_errors: yes
+  tags: configure_windows
+
+# Use SSH to set the create users 
+- name: Add user account on the windows server
+  shell: "ssh -o StrictHostKeyChecking=no -i ./roles/role_windows/files/twistlock_ansible_2019 twistlock@{{ groups['windows'][0]}} net user /add {{ item.ansible_facts.user.username }} AA{{ item.ansible_facts.user.password }} /y"
+  delegate_to: localhost
+  with_items: "{{ user_array.results }}"
+  tags: configure_windows
+
+- name: Add local user group Administrators to user account on the windows server
+  shell: "ssh -o StrictHostKeyChecking=no -i ./roles/role_windows/files/twistlock_ansible_2019 twistlock@{{ groups['windows'][0]}} net localgroup administrators {{ item.ansible_facts.user.username }} /add"
+  delegate_to: localhost
+  with_items: "{{ user_array.results }}"
+  tags: configure_windows

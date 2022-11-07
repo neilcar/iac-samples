@@ -1,0 +1,12 @@
+- name: Add Windows Vulnerabilities to the Intelligence Stream
+  uri:
+    url: "{{ twistlock_console }}/api/v1/settings/intelligence-windows"
+    method: POST
+    user: "{{ console_user }}"
+    password: "{{ console_password }}"
+    body: '{"windowsFeedEnabled":true,"enabled":true,"address":"https://intelligence.twistlock.com"}'
+    force_basic_auth: yes
+    body_format: json
+    validate_certs: no
+  ignore_errors: true
+  tags: windows_intel_stream

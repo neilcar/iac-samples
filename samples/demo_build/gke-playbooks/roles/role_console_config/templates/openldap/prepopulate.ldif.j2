@@ -1,0 +1,44 @@
+dn: ou=users,{{ base_dn }}
+objectClass: top
+objectClass: organizationalUnit
+ou: users
+
+dn: ou=groups,{{ base_dn }}
+objectClass: top
+objectClass: organizationalUnit
+ou: groups
+
+{% for item in ldap_groups %}
+dn: cn={{ item.group }},ou=groups,{{ base_dn }}
+cn: {{ item.group }}
+gidNumber: {{ item.gid }}
+objectClass: top
+objectclass: posixGroup
+
+{% endfor %}
+
+{% for item in users %}
+dn: cn={{ item.username }},ou=users,{{ base_dn }}
+objectClass: iNetOrgPerson
+cn: {{ item.fullname }}
+sn: {{ item.fullname }}
+mail: {{ item.username }}@{{ domain_root }}
+uid: {{ item.username }}
+userPassword:  {{ lookup('password', 'files/' + groups['console'][0] + '/creds/' + item.username) }}
+
+{% if (item|json_query("groups")|default("none")) is not none %}
+{% for group in item.groups %}
+dn: cn={{ group }},ou=groups,{{ base_dn }}
+changetype: modify
+add: memberUid
+memberUid: {{ item.username }}
+
+{% endfor %}
+{% else %}
+dn: cn={{ ldap_groups[0].group }},ou=groups,{{ base_dn }}
+changetype: modify
+add: memberUid
+memberUid: {{ item.username }}
+
+{% endif %}
+{% endfor %}

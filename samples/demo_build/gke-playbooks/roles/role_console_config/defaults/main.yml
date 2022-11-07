@@ -1,0 +1,131 @@
+ldap_groups:
+  - group: admins
+    twistlockgroup: admin
+    gid: 500
+  - group: secops
+    twistlockgroup: operator
+    gid: 501
+  - group: devops
+    twistlockgroup: devOps
+    twistlockcollections: '"Sock-Shop", "Twistlock-Demo"'
+    gid: 502
+  - group: auditor
+    twistlockgroup: auditor
+    twistlockcollections: '"Sock-Shop", "Twistlock-Demo"'
+    gid: 503
+
+enable_openldap: true
+
+twistlock_console_k8s: true
+
+registry_images:
+  - alpine
+  - servethehome/monero_cpu_minergate
+  - infoslack/dvwa
+  - clockworksoul/zork1
+
+enable_splunk: true
+splunk_token: "Anál nathrach, orth' bháis's bethad, do chél dénmha"
+enable_sumo: false
+sumo_access_id: 1234
+sumo_access_key: 4567
+
+aws_create_lambda: false
+aws_access_key_id: AKIAISYP7JO7DYCDIKPA
+aws_secret_access_key: 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
+aws_registry_url: 113505086193.dkr.ecr.us-east-1.amazonaws.com
+
+artifactory_user: twistlock_scan
+artifactory_password: tubby.apron.enunciate.dreamt
+artifactory_url: https://shared.lab.twistlock.com/
+
+vault_secrets:
+  - name: TestPassword
+    key: pass
+    value: Above110thStreet
+  - name: TestCert
+    key: cert
+    value: "-----BEGIN RSA PRIVATE KEY-----MIIEpAIBAAKCAQEA+JVtgztHots6Jhz+T5TP4FP6yKE1W7gW69PeuPC9vCA1aOFUm6wMKxdWKXnoodkSqzfSXyU//ugKeRvcJ+I+MWlNt1610RSWm3rQ51jMWwFmdczonM0WswfDEkYKo14xPsSsg87njwlM3X6OgpFNsM5ym7YkdQk0WT7Yz7EJFuQqYKsg1nGjYWVq8HSCmBsmJ4nKsP4x8lzIZ1rI+lN8SAjuc+L8uo57dLpn089js7F2KhoTzSXY7iD/hmhkYesU8xD4UxJxcqFXSfwXIAnsCOIBXZgl8gswCWPB5wVAe0j3aFsNEGULzr2q7h9nnHmXtXYMGzvcTL6b3CW9oNdf1wIDAQABAoIBAQD3sESnbyjI7/H3ygnoF9otpuAKiv7UvhAwuTKCSnZzfhBZybP5TSvuv9j9iNgwdE/yxLNcVIx4nJLa69So9PiNWWSzoq49f2s1zuFasxMkVrfWBu98VaoZh1Fq4tl0wMUGywcuaro1vsmVJaYwGUI1Ou/dkVawOxSrHEECaV8qKwYCre8iWP/Mfmwhhc/uY+lKDycu+rMDoSStJqF1klNVeuFpmaHrps1q+lmS/jhSGFFae9Hiy16RTDE33H/dUrgwQSnKdwjVBJhe03ksVOpG+DZnFSuQ3RgF+hYo+1EZcfe/x90yoQz/gH4yLpqSfTKijQXVqmYDpYpTbbD4zlcJAoGBAP8LhKbx1vos65kd2Fy+Pvw14oHjxO0vyatqQqRW8E5s3dEtPFC2UvrY3aLM6GDjVkCTI2QyIpnUQp+wwUBgJz11xaHKyaN5YuIgqW+d3lpVfoRC0TsVsAtwRa5T0qefdnalTMYSyh4VHV+2df+YYQnuTTxUHdnJRvB2wCrPftLlAoGBAPmDt0cAmzuVWod5alOpth9X87/ASIHBPLpiSLmf8z0xcRif5o4jhYB39AnVuRJUSK0g5SEemcjtuRcX0yqyFRyUvoM2rA/KnDjYiKYTDHmMVSWRH/v5B841vr7tbPJXM7HJT2fMOlpx3+/xMux/nixP8Lbllr+rD3XDMajC/hALAoGBAMIpHp+JVMO4FtPGKMTSAFk5HGsN3wlCbCEXEAzUMrVBo8xux5AafSmCl5gsrmu0JiGa4kKQ+E5rjRzNDxHXIYhkdEQrgT32VxUXEGZspK3YkCxYQbjdVdwfaKzCG4iImULRrJTOERi9slL/MO2YL6fDxwC6eM8nr924SatNs5sRAoGACBoOyW9rmvOujNeUbEMGdt4UPBWyRQRRRHwMgHqBG2uPkI0gn1zn6NP8SJV3/PBfq791sS2dMLkHWYicgrZlmRf7V6dezuR1TiM5zKqxrQCxgxbDQxtC9Z8pImnzL6tFMnCm82fePTGVY+UhEizSpf2ygz3RN0gGqHw+EIzEUyECgYBmalO1tV3WXD+BxPpt70JsX0qi6D6KBzC1WAIa4yH1P3ky3JwSYFo2AMJEMfhJM7JBsQYU0RGVSTWndqjiGVvyvkUZOgxyQmBIySrFSrd1G5waVnKMpB+7Syvh9o5A9DYw/aHyQmuPSPmLo8PZDHW34xc3Y80prtIOJZedAHJ5iA==-----END RSA PRIVATE KEY-----"
+  - name: mysql_root_password
+    key: password
+    value: "reapply unpaved spoiling judicial wagon payee"
+
+gogs_repos:
+  - name: Struts-Demo
+
+jenkins_views:
+  - name: containers
+  - name: serverless
+  - name: ops
+  - name: rasp
+  - name: run    
+
+vault_secrets_required:
+  - name: postgres_password
+    key: password
+    value: "chute trapper gainfully uncolored supplier grinch"
+
+secrets_rules_required:
+  - rule_name: POSTGRES_PASSWORD
+    images: postgres:*
+    secretname: postgres_password
+    secretkey: password
+    injection: envvar
+    name: POSTGRES_PASSWORD
+
+secrets_rules:
+  - rule_name: TestPassword
+    images: busybox*
+    secretname: TestPassword
+    secretkey: pass
+    injection: envvar
+    name: TEST_PASS
+
+  - rule_name: TestCert
+    images: ubuntu*
+    secretname: TestCert
+    secretkey: cert
+    injection: filesystem
+    name: test_cert.pem
+
+  - rule_name: MYSQL_ROOT_PASSWORD
+    images: mysql:*
+    secretname: mysql_root_password
+    secretkey: password
+    injection: envvar
+    name: MYSQL_ROOT_PASSWORD
+
+twistlock_collections:
+    - name: Twistlock-Components
+      images: 'twistlock/*'
+      containers: '*'
+      hosts: '*'
+      labels: '*'
+      color: '#ff00ff'
+      description:  Twistlock images and containers
+    - name: Sock-Shop
+      images: 'weaveworksdemos/*'
+      containers: '*'
+      hosts: '*'
+      labels: '*'
+      color: '#0000ff'
+      description:  Sock-Shop images
+    - name: Twistlock-Demo
+      images: 'tl_demo/*'
+      containers: '*'
+      hosts: '*'
+      labels: '*'
+      color: '#257500'
+      description:  Twistlock demo
+
+splunk_img: splunk/splunk:7.1.0
+vault_img: vault:0.9.6
+jenkins_img: jenkins/jenkins:2.150.3
+postgres_img: postgres:10.6
+gogs_img: gogs/gogs:0.11.86
+
+custom_compliance_benchmarks:
+  - name: Check hosts file exists (Linux)
+    title: Check that /etc/hosts exists (Linux)
+    script: "if [ ! -f /etc/hosts ]; then\n    echo \"File not found!\"\n    exit 1\nfi"
+    severity: high

@@ -1,0 +1,11 @@
+- hosts: console,k8s-master,k8s-nodes,task-runner,windows
+  gather_facts: no
+  tasks:
+    - name: Deleting VMs
+      import_tasks: gce_delete.yml 
+
+- hosts: console,k8s-master,k8s-nodes,task-runner,windows
+  gather_facts: no
+  tasks:
+    - name: Deleting network objects
+      import_tasks: gce_delete_more.yml 

@@ -1,0 +1,15 @@
+# create gce-pd storage class & set to module_defaults
+- name: copy storageclass yaml
+  copy:
+    src: files/gcepd-sc.yaml
+    dest: /opt/gcepd-sc.yaml
+
+- name: Install storageclass
+  command: kubectl apply -f /opt/gcepd-sc.yaml
+  environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf
+
+- name: Set as default storageclass
+  command: "kubectl patch storageclass slow -p '{\"metadata\": {\"annotations\":{\"storageclass.kubernetes.io/is-default-class\":\"true\"}}}'"
+  environment:
+      KUBECONFIG: /etc/kubernetes/admin.conf

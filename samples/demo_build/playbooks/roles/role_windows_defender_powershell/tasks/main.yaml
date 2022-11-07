@@ -1,0 +1,3 @@
+- name: Get Windows Defender Powershell Script
+  import_tasks: get_windows_defender_powershell.yaml
+  tags: deploy_windows_defender_powershell

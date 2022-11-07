@@ -1,0 +1,49 @@
+node {
+    
+    stage('Clean') {
+        sh 'rm *.zip || true'
+        sh 'rm *.tar || true'
+
+    }
+
+
+    stage('Clone repository') {
+        /* Let's make sure we have the repository cloned to our workspace */
+
+        checkout scm
+    }
+
+    stage('Embed RASP Defender') {
+        withCredentials([usernamePassword(credentialsId: 'twistlock_creds', passwordVariable: 'TL_PASS', usernameVariable: 'TL_USER')]) {
+            sh 'curl -k -u $TL_USER:$TL_PASS --output ./twistcli https://$TL_CONSOLE/api/v1/util/twistcli'
+            sh 'sudo chmod a+x ./twistcli'        
+            sh './twistcli rasp embed --console-host $TL_CONSOLE -address https://$TL_CONSOLE -u $TL_USER -p $TL_PASS --data-folder /twistlock/ --output-file rasp-defender.zip --app-id rasp-dockerfile Dockerfile'
+        } 
+    }
+    
+
+    stage('Build Image') {
+        unzip dir: 'rasp-defender/', glob: '', zipFile: 'rasp-defender.zip'
+        sh "mv run.sh rasp-defender/run.sh"
+        app = docker.build("rasp-defender:${env.BUILD_ID}", "./rasp-defender/")
+        sh "docker save rasp-defender:${env.BUILD_ID} > rasp-defender-${env.BUILD_ID}.tar"
+    }
+
+     
+ 
+
+    stage('Publish Container') {
+ 		sshagent (credentials: ['bb4af5c8-29c5-4063-b318-0e62f75700ca']) {
+			sh "ssh -o StrictHostKeyChecking=no {{ target_user }}@{{ groups['task-runner'][0] }}  docker stop rasp-docker | true"
+            sh "ssh -o StrictHostKeyChecking=no {{ target_user }}@{{ groups['task-runner'][0] }} docker rm rasp-docker | true"
+            sh "ssh -o StrictHostKeyChecking=no {{ target_user }}@{{ groups['task-runner'][0] }} docker load < ./rasp-defender-${env.BUILD_ID}.tar"
+			sh "ssh -o StrictHostKeyChecking=no {{ target_user }}@{{ groups['task-runner'][0] }} docker run --name rasp-docker -d -p 8080:80 rasp-defender:${env.BUILD_ID}"
+			sh "ssh -o StrictHostKeyChecking=no {{ target_user }}@{{ groups['task-runner'][0] }} docker logs rasp-docker"
+
+        }
+              
+        
+
+    }
+
+}
