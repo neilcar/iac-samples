@@ -9,8 +9,8 @@ jobs:
   orca-iac_scan:
     name: Orca IaC Scan
     runs-on: ubuntu-latest
-      env:
-        PROJECT_KEY: default
+    env:
+      PROJECT_KEY: default
     steps:
       # Checkout your repository under $GITHUB_WORKSPACE, so your job can access it
       - name: Checkout Repository
