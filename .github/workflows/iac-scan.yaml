@@ -24,3 +24,10 @@ jobs:
           path:
             # scanning directories: ./terraform/ ./sub-dir/ and a file: ./Dockerfile
             "samples"
+          format: "sarif"
+          output:
+            "results/iac_scan"
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: results/iac_scan.sarif
