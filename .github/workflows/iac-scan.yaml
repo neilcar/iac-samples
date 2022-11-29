@@ -25,7 +25,7 @@ jobs:
             # scanning directories: ./terraform/ ./sub-dir/ and a file: ./Dockerfile
             "samples"
           format: "sarif"
-          console-output: "cli"
+          console-output: "json"
           output:
             "results/"
       - name: Upload SARIF file
