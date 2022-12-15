@@ -7,7 +7,7 @@ jobs:
     name: Scan Source Code
     runs-on: ubuntu-latest
     env: 
-      PROJECT_KEY: ${{ env.PROJECT_KEY }} # Set the desired project to run the cli scanning with
+      PROJECT_KEY: default # Set the desired project to run the cli scanning with
     
     steps:
     # checks-out your repository under $GitHub_WORKSPACE, so your workflow can access it.
