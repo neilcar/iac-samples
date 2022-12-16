@@ -1,1 +1,0 @@
-# Example of embedding RASP Defender in a Dockerfile
