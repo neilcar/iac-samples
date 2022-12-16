@@ -1,11 +1,5 @@
-module github.com/neilcar/go-mod-example
-# from github.com/skyrocknroll
+module github.com/neilcar/golangserver
 
-require (
-	github.com/alecthomas/template v0.0.0-20160405071501-a0175ee3bccc // indirect
-	github.com/alecthomas/units v0.0.0-20151022065526-2efee857e7cf // indirect
-	github.com/gorilla/mux v1.6.2
-	github.com/sirupsen/logrus v1.2.0
-    golang.org/x/net v1.15.10
-	gopkg.in/alecthomas/kingpin.v2 v2.2.6 // indirect
-)
+go 1.19
+golang.org/x/net/http2 0.3.0
+github.com/libp2p/go-libp2p 0.17.0
