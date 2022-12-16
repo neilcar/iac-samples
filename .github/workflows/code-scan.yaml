@@ -22,4 +22,4 @@ jobs:
         set +e
         apt update && apt install -y curl
         curl -sfL 'https://raw.GitHubusercontent.com/orcasecurity/orca-cli/main/install.sh' | bash
-        orca-cli -p ${PROJECT_KEY} fs scan ./codesamples/
+        orca-cli -p ${PROJECT_KEY} fs scan ./
