@@ -1,1 +1,0 @@
-# Compromise struts2-demo running on master host

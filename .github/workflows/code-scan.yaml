@@ -1,0 +1,25 @@
+name: Source Code Scan
+
+on: [pull_request]
+
+jobs:
+  scan-source-code:
+    name: Scan Source Code
+    runs-on: ubuntu-latest
+    env: 
+      PROJECT_KEY: default # Set the desired project to run the cli scanning with
+    
+    steps:
+    # checks-out your repository under $GitHub_WORKSPACE, so your workflow can access it.
+    - name: Checkout
+      uses: actions/checkout@v2
+  
+    # Run Orca CLI against sample code
+    - name: Orca CLI - Security Scanning
+      env:
+        ORCA_SECURITY_API_TOKEN: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
+      run: |
+        set +e
+        apt update && apt install -y curl
+        curl -sfL 'https://raw.GitHubusercontent.com/orcasecurity/orca-cli/main/install.sh' | bash
+        orca-cli -p ${PROJECT_KEY} fs scan ./
