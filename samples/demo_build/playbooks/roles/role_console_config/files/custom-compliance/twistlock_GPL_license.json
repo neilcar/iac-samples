@@ -1,1 +1,0 @@
-{"name":"Check for GPL license (alpine)","previousName":"","title":"Check if the alpine image has a GPL license","script":"if grep 'GPL' ~/licenses.txt \nthen\n    echo \"Found GPL license :(\"\n    exit 1\nelse\n    echo \"No GPL license found :)\"\n    exit 0\nfi","severity":"critical"}

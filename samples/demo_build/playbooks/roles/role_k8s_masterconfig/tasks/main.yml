@@ -1,7 +1,0 @@
-- import_tasks: gcepd.yml
-# - import_tasks: openebs.yml
-- import_tasks: secrets.yml
-- import_tasks: ingress.yml
-- import_tasks: dashboard.yml
-- import_tasks: istio.yml
-

@@ -1,3 +1,0 @@
-- name: Push and run Windows Defender Powershell Script on Windows host
-  import_tasks: execute_windows_defender_powershell.yaml
-  tags: deploy_windows_defender_powershell
