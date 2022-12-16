@@ -1,1 +1,0 @@
-{"name":"Windows check Users folder","previousName":"","title":"Check if the folder c:\\Users exists","script":"IF EXIST C:\\Users Echo test permission failure && exit 1","severity":"high"}

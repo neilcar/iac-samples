@@ -1,1 +1,0 @@
-# Project to run the Weaveworks load generator for Sock Shop

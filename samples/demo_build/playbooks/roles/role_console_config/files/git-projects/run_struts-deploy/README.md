@@ -1,1 +1,0 @@
-# Used to deploy Struts2 demo container as k8s deployment

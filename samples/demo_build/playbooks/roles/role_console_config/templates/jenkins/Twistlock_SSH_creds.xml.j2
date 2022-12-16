@@ -1,9 +1,0 @@
-<com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey plugin="ssh-credentials@1.14">
-    <scope>GLOBAL</scope>
-    <id>bb4af5c8-29c5-4063-b318-0e62f75700ca</id>
-    <description></description>
-    <username>{{ target_user }}</username>
-    <privateKeySource class="com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey$DirectEntryPrivateKeySource">
-    <privateKey>{{ lookup('file','../../role_windows/files/twistlock_ansible_2019') }}</privateKey>
-    </privateKeySource>
-</com.cloudbees.jenkins.plugins.sshcredentials.impl.BasicSSHUserPrivateKey>

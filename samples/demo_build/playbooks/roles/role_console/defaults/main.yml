@@ -1,4 +1,0 @@
-# Twistlock install parameters
-# BUGBUG:  This needs to be changed to "latest" when 19.03 ships
-twistlock_install_version: "latest"
-twistlock_direct_image_install: true

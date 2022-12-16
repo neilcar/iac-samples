@@ -1,1 +1,0 @@
-{"name":"User joker","previousName":"","title":"User joker should not exist!","script":"if grep -Fxq \"joker\" /etc/passwd\nthen\n echo \"user joker found!\"\n    exit 1   \nelse\n    echo \"user joker not found!\" \nfi","severity":"critical"}

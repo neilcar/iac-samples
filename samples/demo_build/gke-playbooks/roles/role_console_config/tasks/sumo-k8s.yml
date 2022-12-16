@@ -1,8 +1,0 @@
-- name: Copy sumo YAML
-  template:
-    src: sumologic/sumologic.yml.j2
-    dest: /opt/sumologic.yml
-
-
-- name: Start sumologic
-  command: "kubectl apply -f /opt/sumologic.yml"
