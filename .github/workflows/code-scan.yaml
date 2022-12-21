@@ -1,6 +1,6 @@
 name: Source Code Scan
 
-on: [pull_request]
+on: [push, pull_request]
 
 jobs:
   scan-source-code:
