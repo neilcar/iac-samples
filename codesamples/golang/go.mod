@@ -1,5 +1,12 @@
-module github.com/neilcar/golangserver
+module github.com/robin-rpr/csi-sshfs
 
-go 1.19
-golang.org/x/net/http2 0.3.0
-github.com/libp2p/go-libp2p 0.17.0
+require (
+	github.com/docker/distribution v2.8.1+incompatible // indirect
+	github.com/golang/glog v1.0.0
+	github.com/google/gnostic v0.6.9 // indirect
+	github.com/google/gofuzz v1.2.0 // indirect
+	golang.org/x/net v0.0.0-20220425223048-2871e0cb64e4
+
+)
+
+go 1.13
