@@ -15,12 +15,10 @@ jobs:
       uses: actions/checkout@v2
   
       
-    # Run Orca CLI against sample code
-    - name: Orca CLI - Security Scanning
-      env:
-        ORCA_SECURITY_API_TOKEN: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
-      run: |
-        set +e
-        apt update && apt install -y curl
-        curl -sfL 'https://raw.GitHubusercontent.com/orcasecurity/orca-cli/main/install.sh' | bash
-        orca-cli -p ${PROJECT_KEY} fs scan ./
+    - name: Run Orca FS Scan
+      uses: orcasecurity/shiftleft-fs-action@v1
+      with:
+        api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
+        project_key: ${{ env.PROJECT_KEY }}
+        path:
+          "./codesamples"
