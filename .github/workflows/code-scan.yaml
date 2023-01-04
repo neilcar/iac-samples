@@ -16,9 +16,17 @@ jobs:
   
       
     - name: Run Orca FS Scan
-      uses: orcasecurity/shiftleft-fs-action@v1
-      with:
-        api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
-        project_key: ${{ env.PROJECT_KEY }}
-        path:
-          "./codesamples"
+        uses: orcasecurity/shiftleft-fs-action@v1
+        with:
+          api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
+          project_key: default
+          path: test
+          format: sarif
+          output: results/
+          console_output: table
+          show_annotations: false
+      - uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          # Path to SARIF file relative to the root of the repository
+          sarif_file: results/file_system.sarif
