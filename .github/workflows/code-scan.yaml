@@ -31,6 +31,7 @@ jobs:
         # Path to SARIF file relative to the root of the repository
         sarif_file: results/file_system.sarif
     - name: Archive SARIF
+      if: always()
       uses: actions/upload-artifact@v3
       with:
         name: sarif-output
