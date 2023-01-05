@@ -20,7 +20,7 @@ jobs:
       with:
         api_token: ${{ secrets.ORCA_SECURITY_API_TOKEN }}
         project_key: default
-        path: test
+        path: ./codesamples
         format: sarif
         output: results/
         console_output: table
